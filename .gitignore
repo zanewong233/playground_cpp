@@ -1,0 +1,134 @@
+# ===================================================================
+#  此 .gitignore 文件专为 C/C++ CMake 项目设计
+#  适用于 Windows, macOS, 和 Linux
+# ===================================================================
+
+# 忽略所有在 build 目录中的内容
+# 这是最重要的规则，所有编译产物都应在此目录下
+/build/
+/build-*/
+
+# 有时人们会用 bin/lib 代替 build/ 目录
+/bin/
+/lib/
+/lib64/
+
+# 忽略由 FetchContent 下载的依赖项的构建目录
+/_deps/
+
+# 显式忽略具体的编译产物，作为双重保障
+*.o
+*.a
+*.so
+*.lib
+*.dll
+*.exp
+*.exe
+*.out
+*.app
+*.pdb
+*.obj
+*.obj.enc
+
+# ===================================================================
+#  构建系统文件 (CMake)
+# ===================================================================
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# 如果使用 Makefiles
+Makefile
+*.make
+
+# ===================================================================
+#  IDE 和编辑器配置文件
+# ===================================================================
+
+# Visual Studio / Visual Studio Code
+.vs/
+.vscode/
+*.sln
+*.suo
+*.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.ncb
+ipch/
+x64/
+Debug/
+Release/
+Win32/
+Win64/
+ARM/
+ARM64/
+
+# Qt Creator
+*.pro.user
+*.pro.user.*
+*.creator
+*.creator.user
+*.creator.user.*
+*.qbs.user
+*.qbs.user.*
+
+# CLion
+.idea/
+
+# Eclipse CDT
+.cproject
+.project
+.settings/
+
+# 通用编辑器备份文件
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+
+# ===================================================================
+#  操作系统生成的文件
+# ===================================================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# =Gnu/Linux
+.Trash-*
+/lost+found
+
+# ===================================================================
+#  其他
+# ===================================================================
+
+# 日志文件
+*.log
+*.log.*
+
+# Doxygen (文档生成工具)
+Doxyfile.bak
+html/
+latex/
+
+# 压缩文件（如果是构建过程产物）
+*.zip
+*.tar.*
