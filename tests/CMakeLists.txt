@@ -1,34 +1,23 @@
-# ====================================================================
-#  为每个测试文件创建可执行程序
-# ====================================================================
+# tests/CMakeLists.txt (合并后的版本)
 
-# 查找所有测试源文件
-file(GLOB TEST_FILES "*.cpp")
+# 1. 查找所有以 "test_" 开头的 cpp 文件，将它们全部收集到一个变量里
+set(ALL_TEST_SOURCES
+	test_print_class.cpp
+	test_thread_scope.cpp
+)
 
-# 遍历所有找到的测试文件
-foreach(TEST_FILE ${TEST_FILES})
-  # 从完整的文件路径中，只提取出文件名，并且不包含扩展名
-  # NAME_WE 的意思就是 "Name Without Extension"
-  get_filename_component(EXECUTABLE_NAME ${TEST_FILE} NAME_WE)
+# 2. 只创建一个可执行程序目标，名字叫 run_all_tests
+#    这个目标由所有找到的测试源文件共同构成
+add_executable(run_all_tests ${ALL_TEST_SOURCES})
 
-  # 为每个测试文件创建一个单独的可执行程序
-  add_executable(${EXECUTABLE_NAME} ${TEST_FILE})
+# 3. 为这个总的测试目标链接所需要的库
+#    所有测试都需要 GTest 和我们自己的库
+target_link_libraries(run_all_tests 
+    PRIVATE 
+    gtest_main
+    playground_utils
+)
 
-  # ====================================================================
-  #  链接依赖
-  # ====================================================================
-
-  # 链接我们的工具库。这是被测试的对象。
-  target_link_libraries(${EXECUTABLE_NAME} PRIVATE playground_utils)
-
-  # 链接GoogleTest库。gtest_main包含了main函数和测试运行环境
-  target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest_main)
-
-  # ====================================================================
-  #  将测试添加到CTest
-  # ====================================================================
-  # 这允许你通过 "ctest" 命令来批量运行所有测试
-  include(GoogleTest)
-  gtest_add_tests(TARGET ${EXECUTABLE_NAME})
-
-endforeach()
+# 4. 将这个目标中的所有测试添加到 CTest
+include(GoogleTest)
+gtest_add_tests(TARGET run_all_tests)

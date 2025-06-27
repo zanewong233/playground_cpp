@@ -1,9 +1,4 @@
-/**
- * @desc:   异步日志类，AsyncLog.cpp
- * @author: zhangyl
- * @date:   2019.04.13
- */
-#include "playground/multithread/async_log.h"
+#include "playground/threading/async_log.h"
 
 #include <stdarg.h>
 #include <stdio.h>
