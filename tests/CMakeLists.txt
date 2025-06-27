@@ -7,8 +7,9 @@ file(GLOB TEST_FILES "*.cpp")
 
 # 遍历所有找到的测试文件
 foreach(TEST_FILE ${TEST_FILES})
-  # 从完整路径中获取不带扩展名的文件名 (例如：test_string_utils)
-  string(REPLACE ".cpp" "" EXECUTABLE_NAME ${TEST_FILE})
+  # 从完整的文件路径中，只提取出文件名，并且不包含扩展名
+  # NAME_WE 的意思就是 "Name Without Extension"
+  get_filename_component(EXECUTABLE_NAME ${TEST_FILE} NAME_WE)
 
   # 为每个测试文件创建一个单独的可执行程序
   add_executable(${EXECUTABLE_NAME} ${TEST_FILE})

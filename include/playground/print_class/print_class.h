@@ -1,25 +1,28 @@
 #pragma once
 #include <iostream>
 
-class MyClass {
+namespace playground {
+class MessagePrinter {
  public:
-  MyClass() { std::cout << "Constructor called" << std::endl; }
-  MyClass(const MyClass& other) = delete;
+  MessagePrinter() { std::cout << "Constructor called" << std::endl; }
+  MessagePrinter(const MessagePrinter& other) = delete;
   // MyClass(const MyClass& other) {
   //   std::cout << "Copy constructor called" << std::endl;
   // }
-  MyClass(MyClass&& other) noexcept {
+  MessagePrinter(MessagePrinter&& other) noexcept {
     std::cout << "Move constructor called" << std::endl;
   }
-  MyClass& operator=(const MyClass& other) = delete;
+  MessagePrinter& operator=(const MessagePrinter& other) = delete;
   // MyClass& operator=(const MyClass& other) {
   //   std::cout << "Copy assignment operator called" << std::endl;
   //   return *this;
   // }
-  MyClass& operator=(MyClass&& other) noexcept {
+  MessagePrinter& operator=(MessagePrinter&& other) noexcept {
     std::cout << "Move assignment operator called" << std::endl;
     return *this;
   }
-  ~MyClass() noexcept { std::cout << "Destructor called" << std::endl; }
-};
+  ~MessagePrinter() noexcept { std::cout << "Destructor called" << std::endl; }
 
+  std::string GetMessage(const std::string& name) const;
+};
+}  // namespace playground

@@ -1,7 +1,8 @@
-#include "ThreadPool.h"
+#include "playground/multithread/thread_pool.h"
 
 #include <iostream>
 
+namespace playground {
 ThreadPool::ThreadPool(unsigned int num) {
   unsigned int hardware_threads = std::thread::hardware_concurrency();
 
@@ -116,3 +117,4 @@ void test_thread_pool() {
   int a = 10;
   a++;
 }
+}  // namespace playground

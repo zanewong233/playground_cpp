@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 
+namespace playground {
 class ThreadPool {
  public:
   ThreadPool(unsigned int num = -1);
@@ -46,3 +47,4 @@ auto ThreadPool::addTask(F&& fn, Args&&... args)
 }
 
 void test_thread_pool();
+}  // namespace playground

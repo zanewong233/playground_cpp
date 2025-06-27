@@ -1,12 +1,4 @@
-/**
- * @desc:   异步日志类，AsyncLog.h
- * @author: zhangyl
- * @date:   2019.04.13
- */
-
-#ifndef __ASYNC_LOG_H__
-#define __ASYNC_LOG_H__
-
+#pragma once
 #include <stdio.h>
 
 #include <condition_variable>
@@ -16,6 +8,7 @@
 #include <string>
 #include <thread>
 
+namespace playground {
 // #ifdef LOG_EXPORTS
 // #define LOG_API __declspec(dllexport)
 // #else
@@ -31,8 +24,8 @@ enum LOG_LEVEL {
   LOG_LEVEL_WARNING,
   LOG_LEVEL_ERROR,     // 用于业务错误
   LOG_LEVEL_SYSERROR,  // 用于技术框架本身的错误
-  LOG_LEVEL_FATAL,  // FATAL 级别的日志会让在程序输出日志后退出
-  LOG_LEVEL_CRITICAL  // CRITICAL 日志不受日志级别控制，总是输出
+  LOG_LEVEL_FATAL,     // FATAL 级别的日志会让在程序输出日志后退出
+  LOG_LEVEL_CRITICAL   // CRITICAL 日志不受日志级别控制，总是输出
 };
 
 // TODO: 多增加几个策略
@@ -105,12 +98,12 @@ class LOG_API CAsyncLog {
  private:
   static bool m_bToFile;  // 日志写入文件还是写到控制台
   static FILE* m_hLogFile;
-  static std::string m_strFileName;      // 日志文件名
-  static std::string m_strFileNamePID;   // 文件名中的进程id
-  static bool m_bTruncateLongLog;        // 长日志是否截断
-  static LOG_LEVEL m_nCurrentLevel;      // 当前日志级别
-  static int64_t m_nFileRollSize;        // 单个日志文件的最大字节数
-  static int64_t m_nCurrentWrittenSize;  // 已经写入的字节数目
+  static std::string m_strFileName;                  // 日志文件名
+  static std::string m_strFileNamePID;               // 文件名中的进程id
+  static bool m_bTruncateLongLog;                    // 长日志是否截断
+  static LOG_LEVEL m_nCurrentLevel;                  // 当前日志级别
+  static int64_t m_nFileRollSize;                    // 单个日志文件的最大字节数
+  static int64_t m_nCurrentWrittenSize;              // 已经写入的字节数目
   static std::list<std::string> m_listLinesToWrite;  // 待写入的日志
   static std::unique_ptr<std::thread> m_spWriteThread;
   static std::mutex m_mutexWrite;
@@ -118,5 +111,4 @@ class LOG_API CAsyncLog {
   static bool m_bExit;     // 退出标志
   static bool m_bRunning;  // 运行标志
 };
-
-#endif  // !__ASYNC_LOG_H__
+}  // namespace playground

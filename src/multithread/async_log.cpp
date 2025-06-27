@@ -3,7 +3,7 @@
  * @author: zhangyl
  * @date:   2019.04.13
  */
-#include "AsyncLog.h"
+#include "playground/multithread/async_log.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 
+namespace playground {
 #define MAX_LINE_LENGTH 256
 #define DEFAULT_ROLL_SIZE 10 * 1024 * 1024
 
@@ -455,7 +456,7 @@ void CAsyncLog::writeThreadProc() {
         strNewFileName += ".log";
         if (!createNewFile(strNewFileName.c_str())) return;
       }  // end inner if
-    }    // end outer-if
+    }  // end outer-if
 
     std::string strLine;
     {
@@ -486,3 +487,4 @@ void CAsyncLog::writeThreadProc() {
 
   m_bRunning = false;
 }
+}  // namespace playground

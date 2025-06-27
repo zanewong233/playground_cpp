@@ -7,7 +7,11 @@
 file(GLOB_RECURSE UTILS_SOURCES CONFIGURE_DEPENDS "*.cpp")
 
 # 创建一个名为 "playground_utils" 的库
-add_library(playground_utils SHARED ${UTILS_SOURCES})
+add_library(playground_utils STATIC ${UTILS_SOURCES})
+
+# 这行代码会给 playground_utils 目标添加一个编译定义。
+# PRIVATE 表示这个定义只在编译本目标时有效，不会传递给链接它的其他目标。
+target_compile_definitions(playground_utils PRIVATE PLAYGROUND_UTILS_EXPORTS)
 
 # ====================================================================
 #  配置头文件路径

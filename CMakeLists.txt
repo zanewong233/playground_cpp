@@ -6,6 +6,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# 设置构建输出目录，避免在源码树中产生编译文件
+# 这样所有 .exe, .lib, .dll, .a, .so 文件都会在 build/bin, build/lib 等目录下
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # ====================================================================
 #  子目录处理
 # ====================================================================
@@ -31,6 +37,9 @@ FetchContent_Declare(
   GIT_TAG        release-1.12.1 # 建议锁定到一个具体的稳定版本
 )
 
+# 新增下面这行代码来强制gtest使用动态运行时库(MD/MDd)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 # 让FetchContent真正地去获取GoogleTest源码
 # QUIET 参数可以减少不必要的输出信息
 FetchContent_MakeAvailable(googletest)
@@ -38,13 +47,3 @@ FetchContent_MakeAvailable(googletest)
 # 将测试目录添加进来，这会执行 tests/CMakeLists.txt
 # 它会使用上面下载的GoogleTest来构建测试用例
 add_subdirectory(tests)
-
-# ====================================================================
-#  可选：方便开发的设置
-# ====================================================================
-
-# 设置构建输出目录，避免在源码树中产生编译文件
-# 这样所有 .exe, .lib, .dll, .a, .so 文件都会在 build/bin, build/lib 等目录下
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

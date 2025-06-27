@@ -1,11 +1,12 @@
-#include "cpp17_test.h"
+#include "playground/cpp17/cpp17_test.h"
 
 #include <iostream>
 #include <iterator>
 #include <string>
 
-#include "cpp17_test_other.h"
+#include "playground/cpp17/cpp17_test_other.h"
 
+namespace playground {
 namespace old {
 template <typename T>
 T sum_all(T val) {
@@ -140,3 +141,4 @@ void cpp17_test::test() {
   // std::cout << "Foo has ::type?" << has_type_member_v<Foo> << std::endl;
   // std::cout << "Bar has ::type?" << has_type_member_v<Bar> << std::endl;
 }
+}  // namespace playground
