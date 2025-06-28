@@ -15,7 +15,6 @@ set(UTILS_SOURCES
 	cpp17/cpp17_test.cpp
 	threading/async_log.cpp
 	threading/thread_pool.cpp
-	threading/thread_scope.cpp
 	print_class/print_class.cpp
 )
 
