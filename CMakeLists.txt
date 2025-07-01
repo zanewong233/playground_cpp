@@ -20,6 +20,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # 它会定义一个名为 "playground_utils" 的库
 add_subdirectory(src)
 
+# -----------------------------------------------------------------
+# Playground 随机实验可执行文件
+# -----------------------------------------------------------------
+add_executable(sandbox
+  ${CMAKE_SOURCE_DIR}/sandbox.cpp
+)
+# 如果想用 playground_utils 库，就 link 上：
+target_link_libraries(sandbox PRIVATE playground_utils)
+
 # ====================================================================
 #  测试配置
 # ====================================================================
