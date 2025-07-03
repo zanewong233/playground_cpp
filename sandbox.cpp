@@ -1,58 +1,45 @@
+#include <chrono>
+#include <mutex>
 #include <numeric>
 #include <thread>
 #include <vector>
 
-template <typename Iterator, typename T>
-struct AccumulateBlock {
-  void operator()(Iterator first, Iterator last, T& result) const {
-    result = std::accumulate(first, last, result);
+#include "playground/print_class/print_class.h"
+#include "playground/threading/threadsafe_stack.hpp"
+
+using namespace playground;
+
+std::mutex mtx;
+
+void foo() {
+  std::lock_guard lock(mtx);
+  throw std::logic_error("test");
+}
+
+void call() {
+  try {
+    foo();
+  } catch (const std::exception&) {
   }
-};
+}
 
-template <typename Iterator, typename T>
-T ParallelAccumulate(Iterator first, Iterator last, T init) {
-  const auto length = std::distance(first, last);
-  if (length == 0) return init;
-
-  unsigned long const min_per_thread = 25;
-  unsigned long const max_threads =
-      (length + min_per_thread - 1) / min_per_thread;
-  unsigned long const hardware_threads = std::thread::hardware_concurrency();
-
-  unsigned long const num_threads =
-      std::min(hardware_threads == 0 ? 2 : hardware_threads, max_threads);
-
-  unsigned long const block_size = length / num_threads;
-
-  std::vector<std::thread> threads(num_threads - 1);
-  std::vector<T> results(num_threads);
-  auto block_start = first;
-  for (int i = 0; i < threads.size(); i++) {
-    auto block_end = block_start;
-    std::advance(block_end, block_size);
-    threads[i] = std::thread(AccumulateBlock<Iterator, T>(), block_start, block_end,
-                             std::ref(results[i]));
-    block_start = block_end;
-  }
-  AccumulateBlock<Iterator, T>()(block_start, last, results[num_threads - 1]);
-
-  for (int i = 0; i < threads.size(); i++) {
-    threads[i].join();
-  }
-
-  return std::accumulate(results.begin(), results.end(), init);
+void func() {
+  ThreadsafeStack<MessagePrinter> stk;
+  MessagePrinter tmp;
+  stk.Push(tmp);
 }
 
 int main() {
-  for (int i = 0; i < 100; i++) {
-    std::vector<int> vec(500, 233);
-    unsigned long res = 0;
-    res = ParallelAccumulate(vec.begin(), vec.end(), res);
-    if (res != 116500ul) {
-      int a = 10;
-      a++;
-    }
-  }
+  std::thread t(call);
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+
+  mtx.lock();
+
+  int a = 10;
+  a++;
+  int b = 20;
+  auto c = a * b;
+  t.join();
 
   return 0;
 }
