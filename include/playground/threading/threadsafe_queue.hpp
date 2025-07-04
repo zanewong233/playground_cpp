@@ -64,7 +64,7 @@ class ThreadsafeQueue {
   }
 
  private:
-  std::mutex m_;
+  mutable std::mutex m_;
   std::condition_variable cv_;
 
   std::queue<T> data_;
