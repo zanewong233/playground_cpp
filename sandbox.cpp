@@ -14,63 +14,25 @@
 
 using namespace playground;
 
-template <typename T>
-std::list<T> SequenceQuickSort(std::list<T>&& input) {
-  if (input.size() <= 1) {
-    return input;
-  }
+void func() {
+  SimpleQueue<int> que;
+  int tmp = 0;
+  auto res = que.try_pop(tmp);
 
-  T pivot = std::move(*input.begin());
-  input.pop_front();
+  que.push(1);
+  res = que.try_pop(tmp);
 
-  std::list<T> lower, higher;
-  for (auto it = input.begin(); it != input.end();) {
-    auto cur = it++;
-    if (*cur < pivot) {
-      lower.splice(lower.end(), input, cur);
-    } else {
-      higher.splice(higher.end(), input, cur);
-    }
-  }
-
-  lower = SequenceQuickSort(std::move(lower));
-  higher = SequenceQuickSort(std::move(higher));
-
-  lower.push_back(std::move(pivot));
-  lower.splice(lower.end(), higher);
-  return lower;
-}
-
-template <typename T>
-std::list<T> ParallelQuickSort(std::list<T>&& input) {
-  if (input.size() <= 1) {
-    return input;
-  }
-  T pivot = std::move(*input.begin());
-  input.pop_front();
-
-  std::list<T> lower, higher;
-  for (auto it = input.begin(); it != input.end();) {
-    auto cur = it++;
-    if (*cur < pivot) {
-      lower.splice(lower.end(), input, cur);
-    } else {
-      higher.splice(higher.end(), input, cur);
-    }
-  }
-
-  auto fut = std::async(&ParallelQuickSort<T>, std::move(lower));
-  higher = ParallelQuickSort(std::move(higher));
-
-  lower = fut.get();
-  lower.push_back(std::move(pivot));
-  lower.splice(lower.end(), higher);
-  return lower;
+  que.push(2);
+  que.push(3);
+  que.push(4);
+  que.push(5);
+  res = que.try_pop(tmp);
+  res = que.try_pop(tmp);
+  res = que.try_pop(tmp);
 }
 
 int main() {
-  std::list<int> list{5, 6, 7, 1, 4, 54, 48};
-  auto sorted = ParallelQuickSort(std::move(list));
+  func();
 
   int a = 10;
   a++;
