@@ -1,4 +1,5 @@
 #include <chrono>
+#include <list>
 #include <mutex>
 #include <numeric>
 #include <thread>
@@ -12,22 +13,36 @@
 
 using namespace playground;
 
-void func() {
-  ThreadsafeQueue<MessagePrinter> que;
-  MessagePrinter tmp(233);
-  que.push(tmp);
-  auto res = que.empty();
-  que.push(tmp);
+template <typename T>
+std::list<T> SequenceQuickSort(std::list<T>&& input) {
+  if (input.size() <= 1) {
+    return input;
+  }
 
-  MessagePrinter tmp1(0);
-  que.wait_and_pop(tmp1);
+  T diviot = std::move(*input.begin());
+  input.pop_front();
 
-  int a = 10;
-  a++;
+  std::list<T> lower, higher;
+  for (auto it = input.begin(); it != input.end();) {
+    auto cur = it++;
+    if (*cur < diviot) {
+      lower.splice(lower.end(), input, cur);
+    } else {
+      higher.splice(higher.end(), input, cur);
+    }
+  }
+
+  lower = SequenceQuickSort(std::move(lower));
+  higher = SequenceQuickSort(std::move(higher));
+
+  lower.push_back(std::move(diviot));
+  lower.splice(lower.end(), higher);
+  return lower;
 }
 
 int main() {
-  func();
+  std::list<int> list{5, 6, 7, 1, 4, 54, 48};
+  auto sorted = SequenceQuickSort(std::move(list));
 
   int a = 10;
   a++;
