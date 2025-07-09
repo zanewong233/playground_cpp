@@ -6,39 +6,41 @@ namespace playground {
 template <typename T>
 class SimpleQueue {
  public:
-  SimpleQueue() : tail_(nullptr) {}
+  SimpleQueue() : head_(std::make_unique<Node>(T{})), tail_(head_.get()) {}
   SimpleQueue(const SimpleQueue&) = delete;
   SimpleQueue& operator()(const SimpleQueue&) = delete;
 
   void push(T new_value) {
-    std::unique_ptr new_node(std::make_unique<Node>(std::move(new_value)));
-    if (tail_) {
-      tail_->next_ = std::move(new_node);
-      tail_ = tail_->next_.get();
-    } else {
-      head_ = std::move(new_node);
-      tail_ = head_.get();
-    }
+    tail_->data_ = std::make_shared<T>(std::move(new_value));
+    std::unique_ptr new_tail = std::make_unique<Node>(T{});
+    tail_->next_ = std::move(new_tail);
+    tail_ = tail_->next_.get();
   }
 
   bool try_pop(T& value) {
-    if (!head_) {
+    if (head_.get() == tail_) {
       return false;
     }
 
-    value = std::move(head_->data_);
+    value = std::move(*head_->data_);
     head_ = std::move(head_->next_);
-    if (!head_.get()) {
-      tail_ = nullptr;
-    }
     return true;
+  }
+
+  std::shared_ptr<T> try_pop() {
+    if (head_.get() == tail_) {
+      return {};
+    }
+    auto res = head_->data_;
+    head_ = std::move(head_->next_);
+    return res;
   }
 
  private:
   struct Node {
-    Node(T data) : data_(std::move(data)) {}
+    Node(T data) {}
 
-    T data_;
+    std::shared_ptr<T> data_;
     std::unique_ptr<Node> next_;
   };
 
