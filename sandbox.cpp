@@ -13,9 +13,8 @@
 #include "playground/threading/threadsafe_stack.hpp"
 
 using namespace playground;
-
 void func() {
-  SimpleQueue<int> que;
+  ThreadsafeQueue<int> que;
   auto res = que.try_pop();
 
   que.push(1);
@@ -32,8 +31,28 @@ void func() {
   res = que.try_pop();
 }
 
+void func1() {
+  ThreadsafeQueue<int> que;
+  int tmp = 0;
+  auto res = que.try_pop(tmp);
+
+  que.push(1);
+  res = que.try_pop(tmp);
+
+  que.push(2);
+  que.push(3);
+  que.push(4);
+  que.push(5);
+  res = que.try_pop(tmp);
+  res = que.try_pop(tmp);
+  res = que.try_pop(tmp);
+  res = que.try_pop(tmp);
+  res = que.try_pop(tmp);
+}
+
 int main() {
   func();
+  func1();
 
   int a = 10;
   a++;
