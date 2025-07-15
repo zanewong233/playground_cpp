@@ -23,26 +23,39 @@ class ThreadsafeQueue {
   }
 
   bool try_pop(T& value) {
-    auto old_head = pop_head();
-    if (!old_head) {
-      return {};
+    std::lock_guard lock(head_mtx_);
+    if (head_.get() == get_tail()) {
+      return false;
     }
+    auto old_head = pop_head();
     value = std::move(*old_head->data_);
     return true;
   }
 
   std::shared_ptr<T> try_pop() {
+    std::lock_guard lock(head_mtx_);
+    if (head_.get() == get_tail()) {
+      return false;
+    }
     auto old_head = pop_head();
-    return old_head ? old_head->data_ : std::shared_ptr<T>{};
+    return old_head->data_;
+  }
+
+  void wait_and_pop(T& value) {
+    std::unique_lock head_lock(wait_for_data());
+    auto old_head = pop_head();
+    value = std::move(*old_head->data_);
   }
 
   std::shared_ptr<T> wait_and_pop() {
-    std::unique_lock lock(head_mtx_);
-    cv_.wait(lock, [this] { return head_.get() != get_tail(); });
-
-    auto old_head = std::move(head_);
-    head_ = old_head->next_;
+    std::unique_lock head_lock(wait_for_data());
+    auto old_head = pop_head();
     return old_head->data_;
+  }
+
+  bool empty() const {
+    std::lock_guard head_lock(head_mtx_);
+    return head_.get() == get_tail();
   }
 
  private:
@@ -58,15 +71,13 @@ class ThreadsafeQueue {
     return tail_;
   }
 
+  std::unique_lock<std::mutex> wait_for_data() const {
+    std::unique_lock head_lock(head_mtx_);
+    cv_.wait(head_lock, [this] { head_.get() != get_tail(); });
+    return head_lock;
+  }
+
   std::unique_ptr<Node> pop_head() {
-    // 必须在get_tail之前对head_mtx_加锁，这样整个过程中只有tail可能变化，
-    // 最多得到的是旧值，否则head 和tail 可能都改变了，结果将不可预测。
-    // 也就是说head 的上锁保证了持有锁的期间队列只能从一个方向修改，
-    // 所以是安全的。
-    std::lock_guard lock(head_mtx_);
-    if (head_.get() == get_tail()) {
-      return {};
-    }
     auto old_head = std::move(head_);
     head_ = std::move(old_head->next_);
     return old_head;
