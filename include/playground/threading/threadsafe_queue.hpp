@@ -91,4 +91,4 @@ class ThreadsafeQueue {
   std::condition_variable cv_;
 };
 }  // namespace playground
-#endif  // PLAYGROUND_THREADING_HIERARCHICAL_MUTEX_H_
+#endif
