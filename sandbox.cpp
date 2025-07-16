@@ -9,45 +9,21 @@
 #include "playground/print_class/print_class.h"
 #include "playground/threading/hierarchical_mutex.hpp"
 #include "playground/threading/joining_thread.hpp"
+#include "playground/threading/threadsafe_lookup_table.hpp"
 #include "playground/threading/threadsafe_queue.hpp"
 #include "playground/threading/threadsafe_stack.hpp"
 
 using namespace playground;
 void func() {
-  ThreadsafeQueue<int> que;
-  auto res = que.try_pop();
-
-  que.push(1);
-  res = que.try_pop();
-
-  que.push(2);
-  que.push(3);
-  que.push(4);
-  que.push(5);
-  res = que.try_pop();
-  res = que.try_pop();
-  res = que.try_pop();
-  res = que.try_pop();
-  res = que.try_pop();
+  ThreadsafeLookupTable<std::string, std::string> tb;
+  std::string str("name"), str1("jack");
+  tb.AddOrUpdate(str, str1);
+  tb.AddOrUpdate(str, "lucky");
 }
 
 void func1() {
-  ThreadsafeQueue<int> que;
-  int tmp = 0;
-  auto res = que.try_pop(tmp);
-
-  que.push(1);
-  res = que.try_pop(tmp);
-
-  que.push(2);
-  que.push(3);
-  que.push(4);
-  que.push(5);
-  res = que.try_pop(tmp);
-  res = que.try_pop(tmp);
-  res = que.try_pop(tmp);
-  res = que.try_pop(tmp);
-  res = que.try_pop(tmp);
+  int a = 10;
+  a++;
 }
 
 int main() {
