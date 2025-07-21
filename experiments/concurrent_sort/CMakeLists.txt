@@ -1,0 +1,2 @@
+add_executable(concurrent_sort concurrent_sort.cpp)
+target_link_libraries(concurrent_sort PRIVATE playground_utils)

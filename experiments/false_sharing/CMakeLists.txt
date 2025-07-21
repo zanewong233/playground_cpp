@@ -1,0 +1,2 @@
+add_executable(false_sharing false_sharing.cpp)
+target_link_libraries(false_sharing PRIVATE playground_utils)

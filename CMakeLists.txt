@@ -1,58 +1,40 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 
-# 定义项目名称和C++标准
 project(Playground LANGUAGES CXX)
+
+# ────────────── 通用编译选项 ──────────────
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS  OFF)
 
-# 设置构建输出目录，避免在源码树中产生编译文件
-# 这样所有 .exe, .lib, .dll, .a, .so 文件都会在 build/bin, build/lib 等目录下
+# 把目标文件全部丢进 build/bin|lib，保持源码树干净
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# ====================================================================
-#  子目录处理
-# ====================================================================
-
-# 将源码目录添加进来，这会执行 src/CMakeLists.txt 文件
-# 它会定义一个名为 "playground_utils" 的库
+# ────────────── 子目录 ──────────────
 add_subdirectory(src)
 
-# -----------------------------------------------------------------
-# Playground 随机实验可执行文件
-# -----------------------------------------------------------------
-add_executable(sandbox
-  ${CMAKE_SOURCE_DIR}/sandbox.cpp
-)
-# 如果想用 playground_utils 库，就 link 上：
-target_link_libraries(sandbox PRIVATE playground_utils)
+# 可选：实验/原型代码
+option(BUILD_EXPERIMENTS "Build prototype & benchmark code in experiments/" ON)
+if (BUILD_EXPERIMENTS)
+    add_subdirectory(experiments)
+endif()
 
-# ====================================================================
-#  测试配置
-# ====================================================================
+# 沙盒可执行程序
+add_executable(sandbox ${CMAKE_SOURCE_DIR}/sandbox.cpp)
+target_link_libraries(sandbox PRIVATE playground_utils)   # 来自 src/ :contentReference[oaicite:1]{index=1}
 
-# 开启测试功能，这样CTest才能工作
+# ────────────── 单元测试 ──────────────
 enable_testing()
 
-# 包含FetchContent模块，用于在构建时自动下载依赖（如GoogleTest）
 include(FetchContent)
-
-# 声明GoogleTest依赖
 FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        release-1.12.1 # 建议锁定到一个具体的稳定版本
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        release-1.12.1
 )
-
-# 新增下面这行代码来强制gtest使用动态运行时库(MD/MDd)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-# 让FetchContent真正地去获取GoogleTest源码
-# QUIET 参数可以减少不必要的输出信息
 FetchContent_MakeAvailable(googletest)
 
-# 将测试目录添加进来，这会执行 tests/CMakeLists.txt
-# 它会使用上面下载的GoogleTest来构建测试用例
-add_subdirectory(tests)
+add_subdirectory(tests)        # 维持现有测试逻辑   :contentReference[oaicite:2]{index=2}
