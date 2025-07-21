@@ -1,10 +1,11 @@
-#include <list>
+#ifndef PLAYGROUND_EXPERIMENTS_CONCURRENT_SORT_H_
+#define PLAYGROUND_EXPERIMENTS_CONCURRENT_SORT_H_
 #include <future>
+#include <list>
 
 #include "playground/threading/threadsafe_stack.hpp"
 
-using namespace playground;
-
+namespace playground::parallel {
 template <typename T>
 class Sorter {
  public:
@@ -80,28 +81,5 @@ class Sorter {
   const unsigned max_thread_count_;
   std::atomic<bool> end_of_data_;
 };
-
-void func() {
-  std::list<int> vals{13, 7,  1,  20, 9, 4,  17, 3,  15, 6,
-                      2,  11, 18, 14, 5, 10, 8,  19, 16, 12};
-  Sorter<int> s;
-  auto sorted = s.DoSort(vals);
-
-  int a = 10;
-  a++;
-}
-
-void func1() {
-  int a = 10;
-  a++;
-}
-
-int main() {
-  func();
-  func1();
-
-  int a = 10;
-  a++;
-
-  return 0;
-}
+}  // namespace playground::parallel
+#endif
