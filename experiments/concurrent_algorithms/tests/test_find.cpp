@@ -133,3 +133,90 @@ TEST(FindParallel_Perf, NotMuchSlowerThanStdFind) {
   EXPECT_LT(par_time.count(), std_time.count() * 2.0);
 }
 #endif
+
+// 递归版本测试
+/* ---------- Ⅰ. 功能正确性 ---------- */
+TEST(FindRecursiveParallel_Functional, EmptyRange) {
+  std::vector<int> v;
+  EXPECT_EQ(FindRecursive(v.begin(), v.end(), 1), v.end());
+}
+
+TEST(FindRecursiveParallel_Functional, SingleElementHit) {
+  std::vector<int> v{42};
+  EXPECT_EQ(FindRecursive(v.begin(), v.end(), 42), v.begin());
+}
+
+TEST(FindRecursiveParallel_Functional, SingleElementMiss) {
+  std::vector<int> v{42};
+  EXPECT_EQ(FindRecursive(v.begin(), v.end(), 0), v.end());
+}
+
+TEST(FindRecursiveParallel_Functional, FrontHit) {
+  std::vector<int> v{7, 8, 9};
+  EXPECT_EQ(FindRecursive(v.begin(), v.end(), 7), v.begin());
+}
+
+TEST(FindRecursiveParallel_Functional, BackHit) {
+  std::vector<int> v{7, 8, 9};
+  EXPECT_EQ(FindRecursive(v.begin(), v.end(), 9), std::prev(v.end()));
+}
+
+TEST(FindRecursiveParallel_Functional, NoHit) {
+  std::vector<int> v{1, 2, 3};
+  EXPECT_EQ(FindRecursive(v.begin(), v.end(), 5), v.end());
+}
+
+// 重复值保证返回第一处
+TEST(FindRecursiveParallel_Functional, DuplicateKeepsEarliest_Vector) {
+  std::vector<int> v{1, 2, 3, 2, 1};
+  auto it = FindRecursive(v.begin(), v.end(), 2);
+  EXPECT_EQ(it, v.begin() + 1);
+}
+
+// 同一逻辑用 list / forward_list 再测一遍
+TEST(FindRecursiveParallel_Functional, DuplicateKeepsEarliest_List) {
+  std::list<int> lst{1, 2, 3, 2, 1};
+  auto it = FindRecursive(lst.begin(), lst.end(), 2);
+  EXPECT_EQ(*it, 2);
+  EXPECT_EQ(std::distance(lst.begin(), it), 1);
+}
+
+TEST(FindRecursiveParallel_Functional, DuplicateKeepsEarliest_ForwardList) {
+  std::forward_list<int> flst{1, 2, 3, 2, 1};
+  auto it = FindRecursive(flst.begin(), flst.end(), 2);
+  EXPECT_EQ(*it, 2);
+  EXPECT_EQ(std::distance(flst.begin(), it), 1);
+}
+
+/* ---------- Ⅱ. 并发场景 ---------- */
+
+// 大数组多次命中：验证无竞态 & 稳定返回
+TEST(FindRecursiveParallel_Concurrency, LargeArrayHit) {
+  constexpr std::size_t N = 1'000'00;
+  std::vector<int> v(N);
+  std::iota(v.begin(), v.end(), 0);
+  const int target = static_cast<int>(N / 2);
+
+  for (int i = 0; i < 1; ++i) {
+    auto it = FindRecursive(v.begin(), v.end(), target);
+    ASSERT_NE(it, v.end());
+    EXPECT_EQ(*it, target);
+  }
+}
+
+// 大数组无命中
+TEST(FindRecursiveParallel_Concurrency, LargeArrayMiss) {
+  constexpr std::size_t N = 1'000'00;
+  std::vector<int> v(N);
+  std::iota(v.begin(), v.end(), 0);
+
+  auto it = FindRecursive(v.begin(), v.end(), -1);
+  EXPECT_EQ(it, v.end());
+}
+
+/* ---------- Ⅲ. 异常传播 / 资源 ---------- */
+TEST(FindRecursiveParallel_Exception, PropagateCompareException) {
+  std::vector<ThrowCmp> v{{1}, {2}, {3}};
+  EXPECT_THROW(FindRecursive(v.begin(), v.end(), ThrowCmp{2}),
+               std::runtime_error);
+}
