@@ -1,11 +1,9 @@
 # experiments/concurrent/tests/CMakeLists.txt
-add_executable(for_each_test for_each_test.cpp)
+add_executable(test_experiment for_each_test.cpp)
 
-target_link_libraries(for_each_test
+target_link_libraries(test_experiment
     PRIVATE
-        concurrent_algorithms      # 头文件库，来自同目录上层 CMakeLists
-        GTest::gtest_main          # 根 CMakeLists 已 FetchContent GTest
-)
+        concurrent_algorithms
+        GTest::gtest_main)
 
-# 把测试注册给 CTest
-add_test(NAME for_each_test COMMAND for_each_test)
+add_test(NAME test_experiment COMMAND test_experiment)

@@ -8,10 +8,12 @@
 namespace playground::parallel {
 class ThreadingGuard {
  public:
-  ThreadingGuard(std::vector<thread>& ths) : threads_(ths) {}
+  ThreadingGuard(std::vector<std::thread>& ths) : threads_(ths) {}
   ~ThreadingGuard() {
-    for (auto it : threads_) {
-      it.join();
+    for (auto& it : threads_) {
+      if (it.joinable()) {
+        it.join();
+      }
     }
   }
 
@@ -24,40 +26,45 @@ class ThreadingGuard {
 
 template <typename Iterator, typename Func>
 void ParallelForEach(Iterator first, Iterator last, Func f) {
-  unsigned length = std::distance(first, last);
-  if (!length) return;
+  auto length = static_cast<unsigned long>(std::distance(first, last));
+  if (!length) {
+    return;
+  }
 
   // 对数据进行分块
-  constexpr unsigned min_pre_thread = 25;
-  unsigned block_count = (length + min_pre_thread - 1) / min_pre_thread;
+  constexpr unsigned long min_pre_thread = 25;
+  const unsigned long max_threads =
+      (length + min_pre_thread - 1) / min_pre_thread;
 
-  unsigned num_thread = std::thread::hardware_concurrency();
-  num_thread = std::min(block_count, std::max(2, num_thread));
-  unsigned block_size = length / block_count;
+  const unsigned long hardware_threads = std::thread::hardware_concurrency();
+
+  const unsigned long num_threads =
+      std::min(max_threads, std::max(2ul, hardware_threads));
+
+  const unsigned long block_size = length / num_threads;
 
   // 按照块大小异步执行
-  std::vector<std::future<void>> fut_list;
-  std::vector<std::thread> threads;
-  Iterator it_start = first;
-  for (unsigned i = 0; i < num_thread - 1; i++) {
-    Iterator it_end = std::advance(it_start, block_size);
-    std::packaged_task<void()> task = [it_start, it_end, f] {
-      for (auto it = it_start; it != it_end; ++it) {
-        f(*it);
-      }
-    };
-
-    fut_list.push_back(task.get_future());
-    threads.emplace_back(task);
-    it_start = it_end;
-  }
+  // 先申请空间可以防止后续push_back抛出异常
+  std::vector<std::future<void>> fut_list(num_threads - 1);
+  std::vector<std::thread> threads(num_threads - 1);
   ThreadingGuard thd_guard(threads);
-  for (auto it = it_start; it != last; ++it) {
-    f(*it);
+
+  Iterator block_start = first;
+  for (unsigned long i = 0; i < num_threads - 1; i++) {
+    Iterator block_end = block_start;
+    std::advance(block_end, block_size);
+    std::packaged_task<void()> task([block_start, block_end, f]() {
+      std::for_each(block_start, block_end, f);
+    });
+
+    fut_list[i] = task.get_future();
+    threads[i] = std::thread(std::move(task));
+    block_start = block_end;
   }
+  std::for_each(block_start, last, f);
 
   // 阻塞获取结果
-  for (auto fut : fut_list) {
+  for (auto& fut : fut_list) {
     fut.get();
   }
 }
