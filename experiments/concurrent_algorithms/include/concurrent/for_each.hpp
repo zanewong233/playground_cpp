@@ -68,5 +68,26 @@ void ParallelForEach(Iterator first, Iterator last, Func f) {
     fut.get();
   }
 }
+
+template <typename Iterator, typename Func>
+void ParallelForEachRecursive(Iterator first, Iterator last, Func f) {
+  const auto length = std::distance(first, last);
+  if (!length) {
+    return;
+  }
+
+  const auto min_per_thread = 25ul;
+  if (length < (2 * min_per_thread)) {
+    std::for_each(first, last, f);
+  } else {
+    const auto mid_point = first + length / 2;
+    std::future<void> first_half =
+        std::async(ParallelForEachRecursive, first, mid_point, f);
+
+    ParallelForEachRecursive(mid_point, last, f);
+    first_half.get();
+  }
+}
+
 }  // namespace playground::parallel
 #endif
