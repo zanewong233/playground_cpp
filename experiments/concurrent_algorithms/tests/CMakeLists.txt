@@ -1,5 +1,10 @@
 # experiments/concurrent/tests/CMakeLists.txt
-add_executable(test_experiment for_each_test.cpp)
+set(ALL_TEST_SOURCES
+	test_for_each.cpp
+	test_find.cpp
+)
+
+add_executable(test_experiment ${ALL_TEST_SOURCES})
 
 target_link_libraries(test_experiment
     PRIVATE
