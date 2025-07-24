@@ -15,7 +15,14 @@
 
 using namespace playground;
 
+struct MyStruct {
+  void operator()(int) {}
+};
+
 void func() {
+  std::vector<int> vec(100);
+  std::iota(vec.begin(), vec.end(), 0);
+
   int a = 10;
   a++;
 }
