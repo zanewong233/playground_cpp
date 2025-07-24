@@ -70,5 +70,45 @@ Iterator Find(Iterator first, Iterator last, const MatchType& val) {
   }
   return res.get_future().get();
 }
+
+template <typename Iterator, typename MatchType>
+Iterator FindRecursiveCore(Iterator begin, Iterator end, const MatchType& match,
+                           std::atomic_bool* done) {
+  const auto length = static_cast<unsigned long>(std::distance(begin, end));
+  if (!length) {
+    return end;
+  }
+
+  try {
+    const unsigned long min_pre_thread = 25;
+    if (length < 2 * min_pre_thread) {
+      for (; begin != end && !done->load(); ++begin) {
+        if (*begin == match) {
+          done->store(true);
+          return begin;
+        }
+      }
+      return end;
+    } else {
+      Iterator mid_point = begin;
+      std::advance(mid_point, length / 2);
+      std::future<Iterator> async_res =
+          std::async(&FindRecursiveCore<Iterator, MatchType>, mid_point, end,
+                     std::cref(match), done);
+
+      Iterator direct_res = FindRecursiveCore(begin, mid_point, match, done);
+      return direct_res == mid_point ? async_res.get() : direct_res;
+    }
+  } catch (...) {
+    done->store(true);
+    throw;
+  }
+}
+
+template <typename Iterator, typename MatchType>
+Iterator FindRecursive(Iterator first, Iterator last, const MatchType& match) {
+  std::atomic_bool done(false);
+  return FindRecursiveCore(first, last, match, &done);
+}
 }  // namespace playground::parallel
 #endif
