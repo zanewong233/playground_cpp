@@ -36,30 +36,8 @@ void PartialSum(it first, it last) {
         if (next_res) {
           next_res->set_exception(std::current_exception());
         } else {
-          // 1) 把当前异常存下来
-          std::exception_ptr eptr = std::current_exception();
-
-          // 2) 若指针为空，说明 catch(...) 是自己 throw 的
-          if (!eptr) {
-            std::cerr << "catch(...): but no active exception?!\n";
-            return;
-          }
-
-          // 3) 开始“重新抛→分类型抓”
-          try {
-            std::rethrow_exception(eptr);        // 把原异常再扔一次
-          } catch (const std::logic_error& e) {  // 先抓你最关心/最具体的
-            std::cerr << "logic_error: " << e.what() << '\n';
-          } catch (const std::runtime_error& e) {  // 次具体
-            std::cerr << "runtime_error: " << e.what() << '\n';
-          } catch (const std::exception& e) {  // 任意 std::exception 派生
-            std::cerr << "std::exception: " << e.what() << '\n';
-          } catch (...) {
-            // 走到这说明抛的是「非 std::exception 且你没列出的自定义类型」
-            // std::cerr << "unknown exception, typeid = "
-            //<< typeid(*std::rethrow_exception(eptr)).name() << '\n';
-            throw;
-          }
+          // 主线程处理方式
+          throw;
         }
       }
     }
