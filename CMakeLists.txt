@@ -23,7 +23,11 @@ endif()
 
 # 沙盒可执行程序
 add_executable(sandbox ${CMAKE_SOURCE_DIR}/sandbox.cpp)
-target_link_libraries(sandbox PRIVATE playground_utils)   # 来自 src/ :contentReference[oaicite:1]{index=1}
+target_link_libraries(sandbox 
+    PRIVATE 
+        playground_utils
+        $<$<BOOL:${BUILD_EXPERIMENTS}>:concurrent_algorithms>
+)
 
 # ────────────── 单元测试 ──────────────
 enable_testing()
