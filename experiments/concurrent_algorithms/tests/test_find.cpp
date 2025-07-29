@@ -11,7 +11,7 @@
 
 #include "concurrent/find.hpp"
 
-using namespace playground::parallel;
+using namespace playground::experiments::parallel;
 
 /* ---------- 辅助类型 ---------- */
 struct ThrowCmp {
@@ -79,6 +79,7 @@ TEST(FindParallel_Functional, DuplicateKeepsEarliest_ForwardList) {
 
 // 大数组多次命中：验证无竞态 & 稳定返回
 TEST(FindParallel_Concurrency, LargeArrayHit) {
+  //constexpr std::size_t N = 100'000'000;
   constexpr std::size_t N = 1'000'000;
   std::vector<int> v(N);
   std::iota(v.begin(), v.end(), 0);
@@ -86,6 +87,7 @@ TEST(FindParallel_Concurrency, LargeArrayHit) {
 
   for (int i = 0; i < 100; ++i) {
     auto it = Find(v.begin(), v.end(), target);
+    //auto it = std::find(v.begin(), v.end(), target);
     ASSERT_NE(it, v.end());
     EXPECT_EQ(*it, target);
   }

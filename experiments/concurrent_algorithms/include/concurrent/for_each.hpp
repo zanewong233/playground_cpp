@@ -7,7 +7,7 @@
 
 #include "threads_guard.hpp"
 
-namespace playground::parallel {
+namespace playground::experiments::parallel {
 template <typename Iterator, typename Func>
 void ForEach(Iterator first, Iterator last, Func f) {
   auto length = static_cast<unsigned long>(std::distance(first, last));
@@ -73,5 +73,5 @@ void ForEachRecursive(Iterator first, Iterator last, Func f) {
   }
 }
 
-}  // namespace playground::parallel
+}  // namespace playground::experiments::parallel
 #endif

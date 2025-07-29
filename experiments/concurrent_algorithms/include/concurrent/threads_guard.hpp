@@ -3,7 +3,7 @@
 #include <thread>
 #include <vector>
 
-namespace playground::parallel {
+namespace playground::experiments::parallel {
 class ThreadsGuard {
  public:
   ThreadsGuard(std::vector<std::thread>& ths) : threads_(ths) {}
@@ -21,5 +21,5 @@ class ThreadsGuard {
  private:
   std::vector<std::thread>& threads_;
 };
-}  // namespace playground::parallel
+}  // namespace playground::experiments::parallel
 #endif

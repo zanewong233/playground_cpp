@@ -12,7 +12,7 @@
 
 #include "concurrent/partial_sum.hpp"
 
-using namespace playground::parallel;
+using namespace playground::experiments::parallel;
 
 //#include <crtdbg.h>
 

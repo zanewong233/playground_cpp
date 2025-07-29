@@ -7,7 +7,7 @@
 
 #include "threads_guard.hpp"
 
-namespace playground::parallel {
+namespace playground::experiments::parallel {
 template <typename Iterator, typename MatchType>
 Iterator Find(Iterator first, Iterator last, const MatchType& val) {
   struct Finder {
@@ -110,5 +110,5 @@ Iterator FindRecursive(Iterator first, Iterator last, const MatchType& match) {
   std::atomic_bool done(false);
   return FindRecursiveCore(first, last, match, &done);
 }
-}  // namespace playground::parallel
+}  // namespace playground::experiments::parallel
 #endif

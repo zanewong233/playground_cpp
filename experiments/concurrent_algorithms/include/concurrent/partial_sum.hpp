@@ -8,7 +8,7 @@
 
 #include "threads_guard.hpp"
 
-namespace playground::parallel {
+namespace playground::experiments::parallel {
 template <typename it>
 void PartialSum(it first, it last) {
   using ValueType = it::value_type;
@@ -82,5 +82,5 @@ void PartialSum(it first, it last) {
   std::advance(block_end, length - 1);
   ChunkProcess()(block_start, block_end, pre_fut, nullptr);
 }
-}  // namespace playground::parallel
+}  // namespace playground::experiments::parallel
 #endif
