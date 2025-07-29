@@ -17,10 +17,6 @@
 
 using namespace playground::experiments::parallel;
 
-struct MyStruct {
-  void operator()(int) {}
-};
-
 class CountDownLatch {
  public:
   explicit CountDownLatch(std::ptrdiff_t count) : count_(count) {}
@@ -39,30 +35,50 @@ class CountDownLatch {
   std::ptrdiff_t count_;
 };
 
-void func() {
-  constexpr std::size_t kTasks = 300;
-
-  ThreadPool pool{4};
-
-  std::atomic<int> done{0};
-  CountDownLatch latch(static_cast<std::ptrdiff_t>(kTasks));
-
-  // 提交任务
-  for (std::size_t i = 0; i < kTasks; ++i) {
-    pool.AddTask([&] {
-      // 模拟轻量工作
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      done.fetch_add(1, std::memory_order_relaxed);
-      latch.count_down();
-    });
+template <typename T>
+class TemplateClass {
+ public:
+  TemplateClass(T val) {}
+  ~TemplateClass() = default;
+  TemplateClass(TemplateClass&& other) : val_(std::move(other.val_)) {}
+  TemplateClass& operator=(TemplateClass&& other) {
+    if (this == &other) {
+      return *this;
+    }
+    val_ = std::move(other.val_);
+    return *this;
   }
 
-  // 等待所有任务完成
-  latch.wait();
+  // TemplateClass(TemplateClass&) = delete;
+  TemplateClass(const TemplateClass&) = delete;
+  TemplateClass& operator=(TemplateClass&) = delete;
 
-  // 断言
-  assert(done.load(std::memory_order_acquire) == static_cast<int>(kTasks));
-  std::cout << "All tasks finished. done = " << done << '\n';
+  void operator()() {}
+
+ private:
+  T val_;
+};
+
+struct MaybeThrow {
+  MaybeThrow() = default;
+  MaybeThrow(MaybeThrow&&) noexcept(false) {}
+  MaybeThrow(const MaybeThrow&) = delete;
+};
+
+void func() {
+  std::vector<FunctionWrapper> wp_vec;
+  auto f1 = []() { return 10; };
+  wp_vec.emplace_back(f1);
+  auto f2 = [] { int a = 10; };
+  wp_vec.emplace_back(f2);
+
+  auto f3 = []() -> int {
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    return 10;
+  };
+  ThreadPool pool;
+  auto fut = pool.AddTask(f3);
+  int val = fut.get();
 
   int a = 10;
   a++;
