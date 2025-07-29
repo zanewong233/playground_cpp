@@ -49,7 +49,7 @@ void func() {
 
   // 提交任务
   for (std::size_t i = 0; i < kTasks; ++i) {
-    pool.addTask([&] {
+    pool.AddTask([&] {
       // 模拟轻量工作
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       done.fetch_add(1, std::memory_order_relaxed);
