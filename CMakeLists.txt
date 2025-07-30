@@ -41,4 +41,19 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_subdirectory(tests)        # 维持现有测试逻辑   :contentReference[oaicite:2]{index=2}
+# ────────────── Google Benchmark 集成 ──────────────
+FetchContent_Declare(
+	googlebenchmark
+	GIT_REPOSITORY https://github.com/google/benchmark.git
+	GIT_TAG		   v1.9.4
+	GIT_SHALLOW	   TRUE
+)
+# 禁用 benchmark 自带的 GTest 测试，以免与现有单元测试冲突
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+# 不编译 googletest 测试
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+# 不启用 CTest 测试 (也可以屏蔽 examples，根据版本有时会连带屏蔽)
+set(BENCHMARK_ENABLE_TESTING    OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googlebenchmark)
+
+add_subdirectory(tests)
