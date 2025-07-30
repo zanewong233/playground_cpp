@@ -34,7 +34,7 @@ static void BM_SorterDoSort(benchmark::State& state) {
 BENCHMARK(BM_SorterDoSort)
     ->Arg(1'000)
     ->Arg(10'000)
-    ->Arg(50'000)
+    ->Arg(30'000)
     ->Complexity();
 
 BENCHMARK_MAIN();

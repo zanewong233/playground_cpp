@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <chrono>
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -79,7 +80,7 @@ TEST(FindParallel_Functional, DuplicateKeepsEarliest_ForwardList) {
 
 // 大数组多次命中：验证无竞态 & 稳定返回
 TEST(FindParallel_Concurrency, LargeArrayHit) {
-  //constexpr std::size_t N = 100'000'000;
+  // constexpr std::size_t N = 100'000'000;
   constexpr std::size_t N = 1'000'000;
   std::vector<int> v(N);
   std::iota(v.begin(), v.end(), 0);
@@ -87,7 +88,7 @@ TEST(FindParallel_Concurrency, LargeArrayHit) {
 
   for (int i = 0; i < 100; ++i) {
     auto it = Find(v.begin(), v.end(), target);
-    //auto it = std::find(v.begin(), v.end(), target);
+    // auto it = std::find(v.begin(), v.end(), target);
     ASSERT_NE(it, v.end());
     EXPECT_EQ(*it, target);
   }

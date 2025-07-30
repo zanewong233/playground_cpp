@@ -20,7 +20,7 @@ class Sorter {
     }
   }
 
-  std::list<T> DoSort(std::list<T> list) {
+  std::list<T> DoSort(std::list<T>& list) {
     if (list.size() < 2) {
       return list;
     }
@@ -45,7 +45,7 @@ class Sorter {
     }
 
     // 后半部分排序
-    std::list<T> sorted_higher = DoSort(list);
+    std::list<T> sorted_higher = DoSort(std::move(list));
     res.splice(res.end(), sorted_higher);
 
     // 任务窃取
@@ -67,7 +67,7 @@ class Sorter {
 
   void TrySortChunk() {
     if (auto chunk = chunks_.Pop()) {
-      chunk->prms_.set_value(DoSort(chunk->data_));
+      chunk->prms_.set_value(DoSort(std::move(chunk->data_)));
     }
   }
 
@@ -108,7 +108,7 @@ class SorterThreadPool {
         std::bind(&SorterThreadPool::DoSort, this, std::move(lower_chunk)));
 
     // 后半部分排序
-    std::list<T> sorted_higher = DoSort(list);
+    std::list<T> sorted_higher = DoSort(std::move(list));
     res.splice(res.end(), sorted_higher);
 
     // 任务窃取

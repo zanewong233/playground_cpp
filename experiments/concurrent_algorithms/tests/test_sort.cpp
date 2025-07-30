@@ -93,7 +93,7 @@ TEST(SorterThreadPoolTest, CustomComparator) {
 TEST(SorterThreadPoolTest, LargeRandom) {
   SorterThreadPool<int> pool;
   std::list<int> input;
-  const int N = 10000;
+  const int N = 10'000;
   for (int i = N; i >= 1; --i) input.push_back(i);
   auto output = pool.DoSort(input);
   int prev = 0;
