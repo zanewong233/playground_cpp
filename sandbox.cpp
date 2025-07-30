@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 
+#include "concurrent/interruptiable_thread.hpp"
 #include "concurrent/thread_pool.hpp"
 #include "playground/print_class/print_class.h"
 #include "playground/threading/hierarchical_mutex.hpp"
@@ -17,13 +18,36 @@
 
 using namespace playground::experiments::parallel;
 
-class Foo {
- public:
-  static constexpr char* val_ = "hello";
-};
-
 void func() {
-  auto tmp = Foo::val_;
+  std::promise<std::function<void()>> interrupt_point_func_promise;
+  auto future = interrupt_point_func_promise.get_future().share();
+  auto worker = [&future]() {
+    while (true) {
+      // 模拟任务执行
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+      std::cout << "execute task" << std::endl;
+      if (auto interrupt_point = future.get()) {
+        try {
+          interrupt_point();
+        } catch (...) {
+          std::cout << "end task!" << std::endl;
+          break;
+        }
+      }
+    }
+  };
+  InterruptiableThread thread_(worker);
+  std::function<void()> interrupt_func =
+      std::bind(&InterruptiableThread::InterruptPoint, &thread_);
+  interrupt_point_func_promise.set_value(interrupt_func);
+
+  std::this_thread::sleep_for(std::chrono::seconds(6));
+  thread_.Interrupt();
+  std::cout << "interrupted task!" << std::endl;
+  thread_.Join();
+
+  std::cout << "end test func" << std::endl;
+
   int a = 10;
   a++;
 }
