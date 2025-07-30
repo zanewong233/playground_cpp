@@ -3,6 +3,7 @@ set(ALL_TEST_SOURCES
 	test_for_each.cpp
 	test_find.cpp
     test_partical_sum.cpp
+	test_sort.cpp
 )
 
 add_executable(test_experiment ${ALL_TEST_SOURCES})

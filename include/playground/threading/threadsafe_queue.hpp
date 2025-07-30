@@ -5,12 +5,12 @@ namespace playground {
 template <typename T>
 class ThreadsafeQueue {
  public:
-  ThreadsafeQueue() : head_(std::make_unique<Node>(T{})), tail_(head_.get()) {}
+  ThreadsafeQueue() : head_(std::make_unique<Node>()), tail_(head_.get()) {}
   ThreadsafeQueue(const ThreadsafeQueue&) = delete;
   ThreadsafeQueue& operator()(const ThreadsafeQueue&) = delete;
 
   void push(T new_value) {
-    auto new_tail = std::make_unique<Node>(T{});
+    auto new_tail = std::make_unique<Node>();
     auto new_data = std::make_shared<T>(std::move(new_value));
 
     {
@@ -60,7 +60,7 @@ class ThreadsafeQueue {
 
  private:
   struct Node {
-    Node(T data) {}
+    //Node(T data) {}
 
     std::shared_ptr<T> data_;
     std::unique_ptr<Node> next_;

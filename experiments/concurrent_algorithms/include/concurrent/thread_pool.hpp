@@ -69,10 +69,20 @@ class ThreadPool {
 
   template <typename F>
   std::future<std::invoke_result_t<F>> AddTask(F&& f) {
-    std::packaged_task task(std::move(f));
-    auto fut = task.get_future();
+    using ResultType = std::invoke_result_t<F>;
+
+    std::packaged_task<ResultType()> task(std::move(f));
+    std::future<ResultType> fut = task.get_future();
     task_que_.push(FunctionWrapper(std::move(task)));
     return fut;
+  }
+  void RunPendingTasks() {
+    FunctionWrapper task;
+    if (task_que_.try_pop(task)) {
+      task();
+    } else {
+      std::this_thread::yield();
+    }
   }
 
  private:
