@@ -17,8 +17,13 @@
 
 using namespace playground::experiments::parallel;
 
-void func() {
+class Foo {
+ public:
+  static constexpr char* val_ = "hello";
+};
 
+void func() {
+  auto tmp = Foo::val_;
   int a = 10;
   a++;
 }
