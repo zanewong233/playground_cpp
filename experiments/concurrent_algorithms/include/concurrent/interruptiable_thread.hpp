@@ -83,9 +83,11 @@ class InterruptFlag {
 };
 thread_local InterruptFlag this_thread_interrupt_flag;
 
+class ThreadInterrupted {};
+
 void InterruptPoint() {
   if (this_thread_interrupt_flag.IsSet()) {
-    throw std::runtime_error("interrupt point!");
+    throw ThreadInterrupted{};
   }
 }
 
@@ -114,10 +116,14 @@ class InterruptiableThread {
     std::promise<InterruptFlag*> promise;
     thread_ = std::thread([f = std::forward<F>(f), &promise]() {
       promise.set_value(&this_thread_interrupt_flag);
-      f();
+      try {
+        f();
+      } catch (const ThreadInterrupted&) {
+      }
     });
     flag_ = promise.get_future().get();
   }
+  // 显式声明移动函数是必须的，这样可以避免本类在移动时误调用构造函数
   InterruptiableThread(InterruptiableThread&& other)
       : thread_(std::move(other.thread_)), flag_(std::move(other.flag_)) {}
   ~InterruptiableThread() {

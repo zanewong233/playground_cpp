@@ -26,14 +26,9 @@ void TestFunc() {
   auto worker = [&](int index) {
     while (true) {
       std::unique_lock lock(que_mutex);
-      auto pred = [&data_que, &que_mutex] { return !data_que.empty(); };
+      auto pred = [&data_que] { return !data_que.empty(); };
 
-      try {
-        InterruptibleWait(cv, lock, pred);
-      } catch (...) {
-        std::cout << index << ": end task!!!!!!!" << std::endl;
-        break;
-      }
+      InterruptibleWait(cv, lock, pred);
 
       int val = data_que.front();
       data_que.pop();
@@ -72,16 +67,11 @@ void TestFunc1() {
   auto worker = [&](int index) {
     while (true) {
       std::unique_lock lock(que_mutex);
-      auto pred = [&data_que, &que_mutex] { return !data_que.empty(); };
 
-      try {
-        InterruptibleWait(cv, lock);
-        if (!pred()) {
-          continue;
-        }
-      } catch (...) {
-        std::cout << index << ": end task!!!!!!!" << std::endl;
-        break;
+      InterruptibleWait(cv, lock);
+
+      if (data_que.empty()) {
+        continue;
       }
 
       int val = data_que.front();
@@ -115,7 +105,7 @@ void TestFunc1() {
 }
 
 int main() {
-  //TestFunc();
+  // TestFunc();
   TestFunc1();
 
   int a = 10;
