@@ -4,9 +4,11 @@
 #include <thread>
 
 namespace playground::experiments::parallel {
+void InterruptPoint();
+
 class InterruptFlag {
  public:
-  InterruptFlag() : flag_(false), cv_(nullptr) {}
+  InterruptFlag() : flag_(false), cv_(nullptr), cv_any_(nullptr) {}
   InterruptFlag(const InterruptFlag&) = delete;
   InterruptFlag& operator=(const InterruptFlag&) = delete;
 
@@ -17,6 +19,8 @@ class InterruptFlag {
     std::lock_guard lock(set_clear_mutex_);
     if (cv_) {
       cv_->notify_all();
+    } else if (cv_any_) {
+      cv_any_->notify_all();
     }
   }
 
@@ -30,6 +34,39 @@ class InterruptFlag {
     cv_ = nullptr;
   }
 
+  template <typename Lockable>
+  void wait(std::condition_variable_any* cv_any, Lockable& lock) {
+    class CustomLock {
+     public:
+      CustomLock(InterruptFlag* self, std::condition_variable_any* cv_any,
+                 Lockable& lock)
+          : self_(self), lock_(lock) {
+        self_->set_clear_mutex_.lock();
+        self_->cv_any_ = cv_any;
+      }
+      ~CustomLock() {
+        self_->cv_any_ = nullptr;
+        self_->set_clear_mutex_.unlock();
+      }
+
+      void lock() { std::lock(lock_, self_->set_clear_mutex_); }
+
+      void unlock() {
+        self_->set_clear_mutex_.unlock();
+        lock_.unlock();
+      }
+
+     private:
+      InterruptFlag* self_;
+      Lockable& lock_;
+    };
+
+    CustomLock custom_lock(this, cv_any, lock);
+    InterruptPoint();
+    cv_any->wait(custom_lock);
+    InterruptPoint();
+  }
+
   struct ConditionVariableGuard {
     InterruptFlag* flag_ = nullptr;
     ConditionVariableGuard(InterruptFlag* flag) : flag_(flag) {}
@@ -37,8 +74,11 @@ class InterruptFlag {
   };
 
  private:
+  friend class CustomLock;
+
   std::atomic_bool flag_;
   std::condition_variable* cv_;
+  std::condition_variable_any* cv_any_;
   std::mutex set_clear_mutex_;
 };
 thread_local InterruptFlag this_thread_interrupt_flag;
@@ -49,9 +89,15 @@ void InterruptPoint() {
   }
 }
 
+template <typename Lockable>
+void InterruptibleWait(std::condition_variable_any& cv_any, Lockable& lock) {
+  this_thread_interrupt_flag.wait(&cv_any, lock);
+}
+
 template <typename Predicate>
-void InterruptWait(std::condition_variable& cv,
-                   std::unique_lock<std::mutex>& lock, Predicate& pred) {
+void InterruptibleWait(std::condition_variable& cv,
+                       std::unique_lock<std::mutex>& lock, Predicate& pred) {
+  // InterruptPoint 与SetConditionVariable 之间存在缝隙，所以需要循环检测
   InterruptPoint();
   this_thread_interrupt_flag.SetConditionVariable(&cv);
   InterruptFlag::ConditionVariableGuard guard(&this_thread_interrupt_flag);

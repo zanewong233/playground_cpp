@@ -29,7 +29,56 @@ void TestFunc() {
       auto pred = [&data_que, &que_mutex] { return !data_que.empty(); };
 
       try {
-        InterruptWait(cv, lock, pred);
+        InterruptibleWait(cv, lock, pred);
+      } catch (...) {
+        std::cout << index << ": end task!!!!!!!" << std::endl;
+        break;
+      }
+
+      int val = data_que.front();
+      data_que.pop();
+      std::cout << index << ": " << val << std::endl;
+    }
+  };
+  std::vector<InterruptiableThread> threads;
+  for (int i = 0; i < 4; i++) {
+    threads.push_back(InterruptiableThread(std::bind(worker, i)));
+  }
+
+  for (int i = 0; i < 50; i++) {
+    {
+      std::unique_lock lock(que_mutex);
+      data_que.push(i);
+    }
+    cv.notify_one();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  std::cout << "end produce data" << std::endl;
+  for (int i = 0; i < threads.size(); i++) {
+    threads[i].Interrupt();
+  }
+
+  std::cout << "end test func" << std::endl;
+
+  int a = 10;
+  a++;
+}
+
+void TestFunc1() {
+  std::queue<int> data_que;
+  std::mutex que_mutex;
+  std::condition_variable_any cv;
+
+  auto worker = [&](int index) {
+    while (true) {
+      std::unique_lock lock(que_mutex);
+      auto pred = [&data_que, &que_mutex] { return !data_que.empty(); };
+
+      try {
+        InterruptibleWait(cv, lock);
+        if (!pred()) {
+          continue;
+        }
       } catch (...) {
         std::cout << index << ": end task!!!!!!!" << std::endl;
         break;
@@ -65,14 +114,8 @@ void TestFunc() {
   a++;
 }
 
-void TestFunc1() {
-
-  int a = 10;
-  a++;
-}
-
 int main() {
-  TestFunc();
+  //TestFunc();
   TestFunc1();
 
   int a = 10;
