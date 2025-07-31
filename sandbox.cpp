@@ -19,32 +19,48 @@
 using namespace playground::experiments::parallel;
 
 void func() {
-  std::promise<std::function<void()>> interrupt_point_func_promise;
-  auto future = interrupt_point_func_promise.get_future().share();
-  auto worker = [&future]() {
+  std::queue<int> data_que;
+  std::mutex que_mutex;
+  std::condition_variable cv;
+
+  auto worker = [&](int index) {
     while (true) {
-      // 模拟任务执行
-      std::this_thread::sleep_for(std::chrono::seconds(2));
-      std::cout << "execute task" << std::endl;
-      if (auto interrupt_point = future.get()) {
-        try {
-          interrupt_point();
-        } catch (...) {
-          std::cout << "end task!" << std::endl;
-          break;
-        }
+      std::unique_lock lock(que_mutex);
+      auto pred = [&data_que, &que_mutex] { return !data_que.empty(); };
+
+      try {
+        InterruptWait(cv, lock, pred);
+      } catch (...) {
+        std::cout << index << ": end task!!!!!!!" << std::endl;
+        break;
       }
+
+      int val = data_que.front();
+      data_que.pop();
+      std::cout << index << ": " << val << std::endl;
     }
   };
-  InterruptiableThread thread_(worker);
-  std::function<void()> interrupt_func =
-      std::bind(&InterruptiableThread::InterruptPoint, &thread_);
-  interrupt_point_func_promise.set_value(interrupt_func);
+  std::vector<InterruptiableThread> threads;
+  for (int i = 0; i < 1; i++) {
+    // std::function<void()> f = std::bind(worker, i);
+    // f();
+    // threads.emplace_back(std::move(f));
+    threads.emplace_back([worker, i](){ worker(i); });
+  }
 
-  std::this_thread::sleep_for(std::chrono::seconds(6));
-  thread_.Interrupt();
-  std::cout << "interrupted task!" << std::endl;
-  thread_.Join();
+  for (int i = 0; i < 50; i++) {
+    {
+      std::unique_lock lock(que_mutex);
+      data_que.push(i);
+    }
+    cv.notify_one();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  std::cout << "end produce data" << std::endl;
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+  for (int i = 0; i < threads.size(); i++) {
+    threads[i].Interrupt();
+  }
 
   std::cout << "end test func" << std::endl;
 
