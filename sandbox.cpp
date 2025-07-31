@@ -18,7 +18,7 @@
 
 using namespace playground::experiments::parallel;
 
-void func() {
+void TestFunc() {
   std::queue<int> data_que;
   std::mutex que_mutex;
   std::condition_variable cv;
@@ -41,11 +41,8 @@ void func() {
     }
   };
   std::vector<InterruptiableThread> threads;
-  for (int i = 0; i < 1; i++) {
-    // std::function<void()> f = std::bind(worker, i);
-    // f();
-    // threads.emplace_back(std::move(f));
-    threads.emplace_back([worker, i](){ worker(i); });
+  for (int i = 0; i < 4; i++) {
+    threads.push_back(InterruptiableThread(std::bind(worker, i)));
   }
 
   for (int i = 0; i < 50; i++) {
@@ -68,14 +65,15 @@ void func() {
   a++;
 }
 
-void func1() {
+void TestFunc1() {
+
   int a = 10;
   a++;
 }
 
 int main() {
-  func();
-  func1();
+  TestFunc();
+  TestFunc1();
 
   int a = 10;
   a++;

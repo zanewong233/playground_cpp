@@ -7,6 +7,8 @@ namespace playground::experiments::parallel {
 class InterruptFlag {
  public:
   InterruptFlag() : flag_(false), cv_(nullptr) {}
+  InterruptFlag(const InterruptFlag&) = delete;
+  InterruptFlag& operator=(const InterruptFlag&) = delete;
 
   bool IsSet() const { return flag_.load(std::memory_order_relaxed); }
 
@@ -62,21 +64,23 @@ void InterruptWait(std::condition_variable& cv,
 class InterruptiableThread {
  public:
   template <typename F>
-  InterruptiableThread(F&& f) {
+  explicit InterruptiableThread(F&& f) {
     std::promise<InterruptFlag*> promise;
     thread_ = std::thread([f = std::forward<F>(f), &promise]() {
       promise.set_value(&this_thread_interrupt_flag);
-      static_assert(std::is_invocable_v<F>, "F 必须可被无参调用");
-      std::cout << typeid(F).name() << "\n";
       f();
     });
     flag_ = promise.get_future().get();
   }
+  InterruptiableThread(InterruptiableThread&& other)
+      : thread_(std::move(other.thread_)), flag_(std::move(other.flag_)) {}
   ~InterruptiableThread() {
     if (thread_.joinable()) {
       thread_.join();
     }
   }
+  InterruptiableThread(const InterruptiableThread&) = delete;
+  InterruptiableThread& operator=(const InterruptiableThread&) = delete;
 
   bool Joinable() const { return thread_.joinable(); }
 
