@@ -6,7 +6,7 @@
 #include <thread>
 #include <vector>
 
-#include "threads_guard.hpp"
+#include "playground/threading/threads_guard.hpp"
 
 namespace playground::experiments::parallel {
 template <typename it>

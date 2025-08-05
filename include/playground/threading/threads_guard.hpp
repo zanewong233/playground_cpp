@@ -1,9 +1,9 @@
-#ifndef PLAYGROUND_EXPERIMENTS_CONCURRENT_THREADS_GUARD_H_
-#define PLAYGROUND_EXPERIMENTS_CONCURRENT_THREADS_GUARD_H_
+#ifndef PLAYGROUND_THREADING_THREADS_GUARD_H_
+#define PLAYGROUND_THREADING_THREADS_GUARD_H_
 #include <thread>
 #include <vector>
 
-namespace playground::experiments::parallel {
+namespace playground {
 class ThreadsGuard {
  public:
   ThreadsGuard(std::vector<std::thread>& ths) : threads_(ths) {}
@@ -21,5 +21,5 @@ class ThreadsGuard {
  private:
   std::vector<std::thread>& threads_;
 };
-}  // namespace playground::experiments::parallel
+}  // namespace playground
 #endif

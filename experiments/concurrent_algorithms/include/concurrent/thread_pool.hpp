@@ -7,8 +7,8 @@
 #include <thread>
 #include <vector>
 
+#include "playground/threading/threads_guard.hpp"
 #include "playground/threading/threadsafe_queue.hpp"
-#include "threads_guard.hpp"
 
 namespace playground::experiments::parallel {
 class FunctionWrapper {
@@ -173,7 +173,7 @@ class ThreadPool {
   playground::ThreadsafeQueue<TaskType> pool_work_queue_;
   std::vector<std::unique_ptr<WorkStealingQueue>> queues_;
   std::vector<std::thread> threads_;
-  ThreadsGuard threads_guard_;
+  playground::ThreadsGuard threads_guard_;
 
   inline static unsigned local_queue_index_ = 0;
   inline static WorkStealingQueue* local_queue_ = nullptr;

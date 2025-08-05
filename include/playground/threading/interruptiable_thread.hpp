@@ -1,9 +1,9 @@
-#ifndef PLAYGROUND_EXPERIMENTS_CONCURRENT_INTERRUPTIABLE_THREAD_H_
-#define PLAYGROUND_EXPERIMENTS_CONCURRENT_INTERRUPTIABLE_THREAD_H_
+#ifndef PLAYGROUND_THREADING_INTERRUPTIABLE_THREAD_H_
+#define PLAYGROUND_THREADING_INTERRUPTIABLE_THREAD_H_
 #include <future>
 #include <thread>
 
-namespace playground::experiments::parallel {
+namespace playground {
 void InterruptPoint();
 
 class InterruptFlag {
@@ -150,5 +150,5 @@ class InterruptiableThread {
   std::thread thread_;
   InterruptFlag* flag_;
 };
-}  // namespace playground::experiments::parallel
+}  // namespace playground
 #endif
