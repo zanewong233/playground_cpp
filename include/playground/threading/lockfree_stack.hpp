@@ -12,6 +12,17 @@ class LockfreeStack {
     while (!head_.compare_exchange_weak(new_node->next_, new_node));
   }
 
+  std::shared_ptr<T> Pop() {
+    Node* old_head = head_.load();
+    while (old_head && !head_.compare_exchange_weak(old_head, old_head->next_));
+    std::shared_ptr<T> res;
+    if (old_head) {
+      res = old_head->data_;
+      delete old_head;
+    }
+    return res;
+  }
+
  private:
   struct Node {
     Node(const T& data) { data_ = std::make_shared<T>(data); }

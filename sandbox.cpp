@@ -24,6 +24,7 @@ using namespace playground::experiments::parallel;
 void TestFunc() {
   playground::LockfreeStack<int> stack;
   stack.Push(10);
+  stack.Pop();
 }
 
 void TestFunc1() {}
