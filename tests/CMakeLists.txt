@@ -8,6 +8,7 @@ set(ALL_TEST_SOURCES
 	test_threadsafe_queue.cpp
     test_threadsafe_lookup_table.cpp
     test_threadsafe_list.cpp
+	test_lockfree_stack.cpp
 )
 
 # 2. 只创建一个可执行程序目标，名字叫 run_all_tests
