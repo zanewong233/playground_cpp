@@ -21,10 +21,10 @@ class HpOwner {
         p_ = &hazard_pointers[i];
         break;
       }
+    }
 
-      if (p_ == nullptr) {
-        throw std::runtime_error("cannot get hazard pointer!");
-      }
+    if (p_ == nullptr) {
+      throw std::runtime_error("cannot get hazard pointer!");
     }
   }
   ~HpOwner() {
@@ -36,6 +36,22 @@ class HpOwner {
 
  private:
   HazardPointer* p_;
+};
+
+template <typename T>
+void DoDelete(void* p) {
+  delete static_cast<T*>(p);
+}
+
+struct DataToReclaim {
+  template <typename T>
+  DataToReclaim(T* data)
+      : data_(data), deleter_(&DoDelete<T>), next_(nullptr) {}
+  ~DataToReclaim() { deleter_(data_); }
+
+  void* data_;
+  std::function<void(void*)> deleter_;
+  DataToReclaim* next_;
 };
 
 template <typename T>
@@ -85,20 +101,6 @@ class LockfreeStack {
     Node* next_;
   };
 
-  template <typename T>
-  void ToDelete(void* p) {
-    delete static_cast<T*>(p);
-  }
-
-  struct DataToReclaim {
-    template <typename T>
-    DataToReclaim(T* data) : data_(data), deleter_(&ToDelete<T>) {}
-
-    void* data_;
-    std::function<void(void*)> deleter_;
-    DataToReclaim* next_;
-  };
-
   std::atomic<void*>& GetHazardPointerForCurrentThread() {
     static thread_local HpOwner hp_owner;
     return hp_owner.GetPointer();
@@ -106,16 +108,32 @@ class LockfreeStack {
 
   bool OutstandingHazardPointersFor(void* node) {
     for (int i = 0; i < max_hazard_pointers; i++) {
-      if (hazard_pointers[max_hazard_pointers].hp_.load() == node) {
+      if (hazard_pointers[i].hp_.load() == node) {
         return true;
       }
     }
     return false;
   }
 
-  void ReclaimLater(Node* node) {}
+  void ReclaimLater(Node* node) { AddToReclaimList(new DataToReclaim(node)); }
 
-  void DeleteNodesWithNoHazards() {}
+  void DeleteNodesWithNoHazards() {
+    auto current = nodes_to_reclaim_.exchange(nullptr);
+    while (current) {
+      const auto next = current->next_;
+      if (OutstandingHazardPointersFor(current->data_)) {
+        AddToReclaimList(current);
+      } else {
+        delete current;
+      }
+      current = next;
+    }
+  }
+
+  void AddToReclaimList(DataToReclaim* node) {
+    node->next_ = nodes_to_reclaim_.load();
+    while (!nodes_to_reclaim_.compare_exchange_weak(node->next_, node));
+  }
 
   std::atomic<Node*> head_;
   std::atomic<DataToReclaim*> nodes_to_reclaim_;
