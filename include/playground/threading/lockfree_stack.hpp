@@ -3,140 +3,71 @@
 #include <memory>
 
 namespace playground {
-struct HazardPointer {
-  std::atomic<std::thread::id> thread_id_ = std::thread::id();
-  std::atomic<void*> hp_ = nullptr;
-};
-
-constexpr unsigned max_hazard_pointers = 100;
-HazardPointer hazard_pointers[max_hazard_pointers];
-
-class HpOwner {
- public:
-  HpOwner() : p_(nullptr) {
-    for (int i = 0; i < max_hazard_pointers; i++) {
-      std::thread::id init_id;
-      if (hazard_pointers[i].thread_id_.compare_exchange_strong(
-              init_id, std::this_thread::get_id())) {
-        p_ = &hazard_pointers[i];
-        break;
-      }
-    }
-
-    if (p_ == nullptr) {
-      throw std::runtime_error("cannot get hazard pointer!");
-    }
-  }
-  ~HpOwner() {
-    p_->hp_.store(nullptr);
-    p_->thread_id_.store({});
-  }
-
-  std::atomic<void*>& GetPointer() const { return p_->hp_; }
-
- private:
-  HazardPointer* p_;
-};
-
-template <typename T>
-void DoDelete(void* p) {
-  delete static_cast<T*>(p);
-}
-
-struct DataToReclaim {
-  template <typename T>
-  DataToReclaim(T* data)
-      : data_(data), deleter_(&DoDelete<T>), next_(nullptr) {}
-  ~DataToReclaim() { deleter_(data_); }
-
-  void* data_;
-  std::function<void(void*)> deleter_;
-  DataToReclaim* next_;
-};
-
 template <typename T>
 class LockfreeStack {
  public:
-  LockfreeStack() : head_(nullptr), nodes_to_reclaim_(nullptr) {}
+  LockfreeStack() = default;
+  ~LockfreeStack() { while (Pop()); }
 
   void Push(const T& data) {
-    const auto new_node = new Node(data);
-    new_node->next_ = head_.load();
-    while (!head_.compare_exchange_weak(new_node->next_, new_node));
+    CountedNodePtr new_node;
+    new_node.node_ = new Node(data);
+    new_node.external_count_ = 1;
+    new_node.node_->next = head_.load();
+    while (head_.compare_exchange_weak(new_node.node_->next, new_node));
   }
 
   std::shared_ptr<T> Pop() {
-    std::atomic<void*>& hp = GetHazardPointerForCurrentThread();
-    Node* old_head = head_.load();
-    do {
-      Node* tmp = nullptr;
-      do {
-        tmp = old_head;
-        hp.store(old_head);
-        old_head = head_.load();
-      } while (tmp != old_head);
-    } while (old_head &&
-             !head_.compare_exchange_strong(old_head, old_head->next_));
-    hp.store(nullptr);
-
-    std::shared_ptr<T> res;
-    if (old_head) {
-      res.swap(old_head->data_);
-      if (OutstandingHazardPointersFor(old_head)) {
-        ReclaimLater(old_head);
-      } else {
-        delete old_head;
+    while (true) {
+      CountedNodePtr old_head = head_.load();
+      IncreaseHeadCount(old_head);
+      Node* const node = old_head.node_;
+      if (!node) {
+        return {};
       }
-      DeleteNodesWithNoHazards();
-    }
 
-    return res;
+      if (head_.compare_exchange_strong(old_head, node->next)) {
+        std::shared_ptr<T> res;
+        res.swap(node->data_);
+        const int count_increase = old_head.external_count_ - 2;
+        if (node->internal_count_.fetch_add(count_increase) ==
+            -count_increase) {
+          delete node;
+        }
+        return res;
+      } else {
+        if (node->internal_count_.fetch_add(1) == 1) {
+          delete node;
+        }
+      }
+    }
   }
 
  private:
-  struct Node {
-    Node(const T& data) { data_ = std::make_shared<T>(data); }
-
-    std::shared_ptr<T> data_;
-    Node* next_;
+  struct Node;
+  struct CountedNodePtr {
+    Node* node_ = nullptr;
+    unsigned external_count_ = 0;
   };
 
-  std::atomic<void*>& GetHazardPointerForCurrentThread() {
-    static thread_local HpOwner hp_owner;
-    return hp_owner.GetPointer();
+  struct Node {
+    Node(const T& data)
+        : data_(std::make_shared<T>(data)), internal_count_(0) {}
+    std::shared_ptr<T> data_;
+    CountedNodePtr next;
+    std::atomic_uint internal_count_;
+  };
+
+  void IncreaseHeadCount(CountedNodePtr& old_head) {
+    CountedNodePtr new_head;
+    do {
+      new_head = old_head;
+      ++new_head.external_count_;
+    } while (!head_.compare_exchange_strong(old_head, new_head));
+    old_head.external_count_ = new_head.external_count_;
   }
 
-  bool OutstandingHazardPointersFor(void* node) {
-    for (int i = 0; i < max_hazard_pointers; i++) {
-      if (hazard_pointers[i].hp_.load() == node) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void ReclaimLater(Node* node) { AddToReclaimList(new DataToReclaim(node)); }
-
-  void DeleteNodesWithNoHazards() {
-    auto current = nodes_to_reclaim_.exchange(nullptr);
-    while (current) {
-      const auto next = current->next_;
-      if (OutstandingHazardPointersFor(current->data_)) {
-        AddToReclaimList(current);
-      } else {
-        delete current;
-      }
-      current = next;
-    }
-  }
-
-  void AddToReclaimList(DataToReclaim* node) {
-    node->next_ = nodes_to_reclaim_.load();
-    while (!nodes_to_reclaim_.compare_exchange_weak(node->next_, node));
-  }
-
-  std::atomic<Node*> head_;
-  std::atomic<DataToReclaim*> nodes_to_reclaim_;
+  std::atomic<CountedNodePtr> head_;
 };
 }  // namespace playground
 
