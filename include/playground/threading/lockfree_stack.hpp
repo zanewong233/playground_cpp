@@ -14,7 +14,7 @@ class LockfreeStack {
     new_node.node_ = new Node(data);
     new_node.external_count_ = 1;
     new_node.node_->next = head_.load();
-    while (head_.compare_exchange_weak(new_node.node_->next, new_node));
+    while (!head_.compare_exchange_weak(new_node.node_->next, new_node));
   }
 
   std::shared_ptr<T> Pop() {
@@ -36,7 +36,7 @@ class LockfreeStack {
         }
         return res;
       } else {
-        if (node->internal_count_.fetch_add(1) == 1) {
+        if (node->internal_count_.fetch_sub(1) == 1) {
           delete node;
         }
       }
@@ -47,15 +47,17 @@ class LockfreeStack {
   struct Node;
   struct CountedNodePtr {
     Node* node_ = nullptr;
-    unsigned external_count_ = 0;
+    unsigned external_count_ = 0;  // 外部引用计数：有多少线程引用了本节点
   };
 
   struct Node {
     Node(const T& data)
         : data_(std::make_shared<T>(data)), internal_count_(0) {}
+
     std::shared_ptr<T> data_;
     CountedNodePtr next;
-    std::atomic_uint internal_count_;
+    std::atomic_uint
+        internal_count_;  // 内部引用计数：有多少线程归还了本节点的引用
   };
 
   void IncreaseHeadCount(CountedNodePtr& old_head) {

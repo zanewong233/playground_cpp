@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <numeric>
+#include <future>
 
 #include "playground/threading/lockfree_stack.hpp"
 
@@ -31,8 +32,8 @@ TEST(LockfreeStackTest, SingleThread) {
 // 多线程生产者/消费者测试：保证线程安全性与无死锁
 TEST(LockfreeStackTest, MultiThreadProducerConsumer) {
   LockfreeStack<int> stack;
-  const int num_producers = 4;
-  const int num_consumers = 4;
+  const int num_producers = 8;
+  const int num_consumers = 8;
   const int items_per_producer = 10000;
 
   std::atomic<int> produced_count{0};
@@ -41,8 +42,15 @@ TEST(LockfreeStackTest, MultiThreadProducerConsumer) {
   std::vector<long long> produced_sum_vec(num_producers, 0);
   std::vector<long long> consumed_sum_vec(num_consumers, 0);
 
+  std::atomic<int> thread_ready_count = 0;
+  std::promise<void> go;
+  auto go_fut = go.get_future().share();
+
   // 生产者线程：推入 items_per_producer 个元素
   auto producer = [&](int id, long long* sum) {
+    thread_ready_count++;
+    go_fut.get();
+
     for (int i = 0; i < items_per_producer; ++i) {
       int val = id * items_per_producer + i;
       *sum += val;
@@ -53,6 +61,9 @@ TEST(LockfreeStackTest, MultiThreadProducerConsumer) {
 
   // 消费者线程：一直 Pop，直到总消费数达到预期
   auto consumer = [&](long long* sum) {
+    thread_ready_count++;
+    go_fut.get();
+
     while (true) {
       auto p = stack.Pop();
       if (p) {
@@ -77,6 +88,9 @@ TEST(LockfreeStackTest, MultiThreadProducerConsumer) {
     consumers.emplace_back(consumer, &consumed_sum_vec[i]);
   }
 
+  while (thread_ready_count.load() != (num_producers + num_consumers));
+  go.set_value();
+
   for (auto& t : producers) t.join();
   for (auto& t : consumers) t.join();
 
@@ -93,11 +107,18 @@ TEST(LockfreeStackTest, MultiThreadProducerConsumer) {
 // 混合测试：交错 Push/Pop 操作
 TEST(LockfreeStackTest, MixedPushPop) {
   LockfreeStack<int> stack;
-  const int threads = 4;
+  const int threads = 12;
   const int ops_per_thread = 5000;
   std::atomic<int> net_count{0};
 
+  std::atomic<int> thread_ready_count = 0;
+  std::promise<void> go;
+  auto go_fut = go.get_future().share();
+
   auto worker = [&](int id) {
+    thread_ready_count++;
+    go_fut.get();
+
     for (int i = 0; i < ops_per_thread; ++i) {
       if ((i + id) % 2 == 0) {
         stack.Push(i);
@@ -111,6 +132,10 @@ TEST(LockfreeStackTest, MixedPushPop) {
 
   std::vector<std::thread> ws;
   for (int i = 0; i < threads; ++i) ws.emplace_back(worker, i);
+
+  while (thread_ready_count.load() != threads);
+  go.set_value();
+
   for (auto& t : ws) t.join();
 
   int count = 0;
