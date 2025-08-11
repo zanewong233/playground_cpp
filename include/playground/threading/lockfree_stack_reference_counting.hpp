@@ -1,13 +1,13 @@
-#ifndef PLAYGROUND_THREADING_LOCKFREE_STACK_H_
-#define PLAYGROUND_THREADING_LOCKFREE_STACK_H_
+#ifndef PLAYGROUND_THREADING_LOCKFREE_STACK_REFERENCE_COUNTING_H_
+#define PLAYGROUND_THREADING_LOCKFREE_STACK_REFERENCE_COUNTING_H_
 #include <memory>
 
 namespace playground {
 template <typename T>
-class LockfreeStack {
+class LockfreeStackReferenceCounting {
  public:
-  LockfreeStack() = default;
-  ~LockfreeStack() { while (Pop()); }
+  LockfreeStackReferenceCounting() = default;
+  ~LockfreeStackReferenceCounting() { while (Pop()); }
 
   void Push(const T& data) {
     CountedNodePtr new_node;
