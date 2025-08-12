@@ -8,47 +8,47 @@
 
 using playground::ThreadsafeList;
 
-// Test 1: PushFront + ForEach Ë³ĞòĞÔ
+// Test 1: PushFront + ForEach é¡ºåºæ€§
 TEST(ThreadsafeListTest, PushAndForEach) {
   ThreadsafeList<int> list;
   list.PushFront(1);
   list.PushFront(2);
   list.PushFront(3);
-  // ÓÉÓÚ PushFront£¬×ÜÏßĞÔ´ÓÍ·²¿ÍùºóÊÇ 3,2,1
+  // ç”±äº PushFrontï¼Œæ€»çº¿æ€§ä»å¤´éƒ¨å¾€åæ˜¯ 3,2,1
   std::vector<int> result;
   list.ForEach([&](const std::shared_ptr<int>& p) { result.push_back(*p); });
   EXPECT_EQ(result, (std::vector<int>{3, 2, 1}));
 }
 
-// Test 2: FindFirstIf ÕıÈ··µ»Ø£¯ÕÒ²»µ½
+// Test 2: FindFirstIf æ­£ç¡®è¿”å›ï¼æ‰¾ä¸åˆ°
 TEST(ThreadsafeListTest, FindFirstIf) {
   ThreadsafeList<std::string> list;
   list.PushFront("apple");
   list.PushFront("banana");
-  // ÕÒµÚÒ»¸ö³¤¶ÈÎª 5 µÄ×Ö·û´®£¬Ó¦¸ÃÊÇ "apple"
+  // æ‰¾ç¬¬ä¸€ä¸ªé•¿åº¦ä¸º 5 çš„å­—ç¬¦ä¸²ï¼Œåº”è¯¥æ˜¯ "apple"
   auto p = list.FindFirstIf(
       [](const std::shared_ptr<std::string>& s) { return s->size() == 5; });
   ASSERT_TRUE(p);
   EXPECT_EQ(*p, "apple");
-  // ÕÒ²»µ½ "cherry"
+  // æ‰¾ä¸åˆ° "cherry"
   auto missing = list.FindFirstIf([](const auto& s) { return *s == "cherry"; });
   EXPECT_FALSE(missing);
 }
 
-// Test 3: RemoveIf °´Î½´ÊÉ¾³ıÔªËØ
+// Test 3: RemoveIf æŒ‰è°“è¯åˆ é™¤å…ƒç´ 
 TEST(ThreadsafeListTest, RemoveIf) {
   ThreadsafeList<int> list;
-  // ²åÈë 1..5£¬×îÖÕÁ´±íÎª 5,4,3,2,1
+  // æ’å…¥ 1..5ï¼Œæœ€ç»ˆé“¾è¡¨ä¸º 5,4,3,2,1
   for (int i = 1; i <= 5; ++i) list.PushFront(i);
-  // É¾³ıËùÓĞÅ¼Êı
+  // åˆ é™¤æ‰€æœ‰å¶æ•°
   list.RemoveIf([](const std::shared_ptr<int>& p) { return (*p % 2) == 0; });
-  // µü´úºóÓ¦Ê£ÏÂ 5,3,1
+  // è¿­ä»£ååº”å‰©ä¸‹ 5,3,1
   std::vector<int> result;
   list.ForEach([&](const std::shared_ptr<int>& p) { result.push_back(*p); });
   EXPECT_EQ(result, (std::vector<int>{5, 3, 1}));
 }
 
-// Test 4: ¶àÏß³Ì²¢·¢ PushFront
+// Test 4: å¤šçº¿ç¨‹å¹¶å‘ PushFront
 TEST(ThreadsafeListTest, ConcurrentPush) {
   ThreadsafeList<int> list;
   constexpr int N = 1000;
@@ -61,7 +61,7 @@ TEST(ThreadsafeListTest, ConcurrentPush) {
   std::thread t2(worker, N);
   t1.join();
   t2.join();
-  // Í³¼ÆÔªËØ¸öÊı£¬Ó¦¸ÃÕıºÃÊÇ 2*N
+  // ç»Ÿè®¡å…ƒç´ ä¸ªæ•°ï¼Œåº”è¯¥æ­£å¥½æ˜¯ 2*N
   int count = 0;
   list.ForEach([&](const std::shared_ptr<int>&) { ++count; });
   EXPECT_EQ(count, 2 * N);

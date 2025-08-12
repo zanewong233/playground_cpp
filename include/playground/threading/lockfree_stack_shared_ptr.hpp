@@ -1,6 +1,6 @@
 /*
- * ʹ������ʵ�ַ�ʽ��stack����Ҫ�ȵ���
- * SharedPtrAtomicLockFreeRuntimeProbe�ж�����ָ���Ƿ�Ϊlock-free ��
+ * 使用这种实现方式的stack，需要先调用
+ * SharedPtrAtomicLockFreeRuntimeProbe判断智能指针是否为lock-free 的
  */
 #ifndef PLAYGROUND_THREADING_LOCKFREE_STACK_SHARED_PTR_H_
 #define PLAYGROUND_THREADING_LOCKFREE_STACK_SHARED_PTR_H_

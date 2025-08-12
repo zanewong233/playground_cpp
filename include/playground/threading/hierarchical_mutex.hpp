@@ -1,5 +1,5 @@
-// �ṩһ���㼶�������и߲㼶����ʱ���ԶԵͲ㼶�������м���
-// ��Ҫ���ڽ�����������˳��һ�µ��µ���������
+// 提供一个层级锁，持有高层级的锁时可以对低层级的锁进行加锁
+// 主要用于解决多个锁加锁顺序不一致导致的死锁问题
 
 #ifndef PLAYGROUND_THREADING_HIERARCHICAL_MUTEX_H_
 #define PLAYGROUND_THREADING_HIERARCHICAL_MUTEX_H_

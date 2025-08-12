@@ -99,7 +99,7 @@ void InterruptibleWait(std::condition_variable_any& cv_any, Lockable& lock) {
 template <typename Predicate>
 void InterruptibleWait(std::condition_variable& cv,
                        std::unique_lock<std::mutex>& lock, Predicate& pred) {
-  // InterruptPoint ÓëSetConditionVariable Ö®¼ä´æÔÚ·ìÏ¶£¬ËùÒÔĞèÒªÑ­»·¼ì²â
+  // InterruptPoint ä¸SetConditionVariable ä¹‹é—´å­˜åœ¨ç¼éš™ï¼Œæ‰€ä»¥éœ€è¦å¾ªç¯æ£€æµ‹
   InterruptPoint();
   this_thread_interrupt_flag.SetConditionVariable(&cv);
   InterruptFlag::ConditionVariableGuard guard(&this_thread_interrupt_flag);
@@ -123,7 +123,7 @@ class InterruptiableThread {
     });
     flag_ = promise.get_future().get();
   }
-  // ÏÔÊ½ÉùÃ÷ÒÆ¶¯º¯ÊıÊÇ±ØĞëµÄ£¬ÕâÑù¿ÉÒÔ±ÜÃâ±¾ÀàÔÚÒÆ¶¯Ê±Îóµ÷ÓÃ¹¹Ôìº¯Êı
+  // æ˜¾å¼å£°æ˜ç§»åŠ¨å‡½æ•°æ˜¯å¿…é¡»çš„ï¼Œè¿™æ ·å¯ä»¥é¿å…æœ¬ç±»åœ¨ç§»åŠ¨æ—¶è¯¯è°ƒç”¨æ„é€ å‡½æ•°
   InterruptiableThread(InterruptiableThread&& other)
       : thread_(std::move(other.thread_)), flag_(std::move(other.flag_)) {}
   ~InterruptiableThread() {

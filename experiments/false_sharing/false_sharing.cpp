@@ -1,5 +1,5 @@
-// ����α�������ڴ������ܵ�Ӱ��
-// α��������ͬ�̵߳�����λ��ͬһ�������У������ں˼���Ҫͬ�����ݣ����������˷�
+// 测试伪共享对于代码性能的影响
+// 伪共享：不同线程的数据位于同一个缓存行，导致内核间需要同步数据，导致性能浪费
 #include <atomic>
 #include <chrono>
 #include <iostream>
@@ -53,6 +53,6 @@ int main() {
             << "Padded    (ms)    : " << t_padded.count() << '\n'
             << "Speed-up           : "
             << static_cast<double>(t_shared.count()) / t_padded.count()
-            << "��\n";
+            << "×\n";
   return 0;
 }

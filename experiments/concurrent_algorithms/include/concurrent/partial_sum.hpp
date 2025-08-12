@@ -36,7 +36,7 @@ void PartialSum(it first, it last) {
         if (next_res) {
           next_res->set_exception(std::current_exception());
         } else {
-          // Ö÷Ïß³Ì´¦Àí·½Ê½
+          // ä¸»çº¿ç¨‹å¤„ç†æ–¹å¼
           throw;
         }
       }

@@ -17,7 +17,7 @@ using namespace playground::experiments::parallel;
 //#include <crtdbg.h>
 
 //int main(int argc, char** argv) {
-//  // ´ò¿ª CRT ¶Ñ¼ì²é
+//  // æ‰“å¼€ CRT å †æ£€æŸ¥
 //  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF |
 //                 _CRTDBG_LEAK_CHECK_DF);
 //  ::testing::InitGoogleTest(&argc, argv);
@@ -26,7 +26,7 @@ using namespace playground::experiments::parallel;
 //  return RUN_ALL_TESTS();
 //}
 
-/* ---------- ¢ñ. ¹¦ÄÜÕıÈ·ĞÔ ---------- */
+/* ---------- â… . åŠŸèƒ½æ­£ç¡®æ€§ ---------- */
 TEST(PartialSumParallel_Functional, EmptyRange) {
   std::vector<int> v;
   PartialSum(v.begin(), v.end());
@@ -71,7 +71,7 @@ TEST(PartialSumParallel_Functional, ForwardListIteratorCategory) {
   EXPECT_EQ(result, expected);
 }
 
-/* ---------- ¢ò. Óë std::partial_sum Ò»ÖÂµÄ´ó¹æÄ£Êı×é ---------- */
+/* ---------- â…¡. ä¸ std::partial_sum ä¸€è‡´çš„å¤§è§„æ¨¡æ•°ç»„ ---------- */
 
 TEST(PartialSumParallel_CorrectnessVsStd, LargeVectorOrdered) {
    constexpr std::size_t N = 1'000'000;
@@ -101,7 +101,7 @@ TEST(PartialSumParallel_CorrectnessVsStd, LargeVectorRandom) {
   EXPECT_EQ(data, expect);
 }
 
-/* ---------- ¢ó. ²¢·¢¿ÉÖØÈë£º¶àÏß³ÌÍ¬Ê±µ÷ÓÃ ---------- */
+/* ---------- â…¢. å¹¶å‘å¯é‡å…¥ï¼šå¤šçº¿ç¨‹åŒæ—¶è°ƒç”¨ ---------- */
 
 TEST(PartialSumParallel_Reentrancy, ConcurrentInvocations) {
   constexpr std::size_t N = 200'000;
@@ -118,7 +118,7 @@ TEST(PartialSumParallel_Reentrancy, ConcurrentInvocations) {
   t1.join();
   t2.join();
 
-  // ½á¹ûÓ¦·Ö±ğµÈÓÚ±ê×¼¿âÊä³ö
+  // ç»“æœåº”åˆ†åˆ«ç­‰äºæ ‡å‡†åº“è¾“å‡º
   std::vector<int> expected(N);
   std::iota(expected.begin(), expected.end(), 1);
   std::partial_sum(expected.begin(), expected.end(), expected.begin());
@@ -127,7 +127,7 @@ TEST(PartialSumParallel_Reentrancy, ConcurrentInvocations) {
   EXPECT_EQ(b, expected);
 }
 
-/* ---------- ¢ô. ¼òµ¥ĞÔÄÜ»Ø¹é£¨Release Ê±£© ---------- */
+/* ---------- â…£. ç®€å•æ€§èƒ½å›å½’ï¼ˆRelease æ—¶ï¼‰ ---------- */
 
 #ifdef NDEBUG
 TEST(PartialSumParallel_Perf, NotMuchSlowerThanStd) {
@@ -135,7 +135,7 @@ TEST(PartialSumParallel_Perf, NotMuchSlowerThanStd) {
   std::vector<int> v(N);
   std::iota(v.begin(), v.end(), 1);
 
-  std::vector<int> v_copy = v;  // ¸ø std::partial_sum ÓÃ
+  std::vector<int> v_copy = v;  // ç»™ std::partial_sum ç”¨
 
   auto t0 = std::chrono::high_resolution_clock::now();
   PartialSum(v.begin(), v.end());
@@ -147,8 +147,8 @@ TEST(PartialSumParallel_Perf, NotMuchSlowerThanStd) {
   ms par_time = t1 - t0;
   ms std_time = t2 - t1;
 
-  // ²¢ĞĞËã·¨²»Ó¦±ÈË³Ğò°æÂı 2 ±¶ÒÔÉÏ
+  // å¹¶è¡Œç®—æ³•ä¸åº”æ¯”é¡ºåºç‰ˆæ…¢ 2 å€ä»¥ä¸Š
   EXPECT_LT(par_time.count(), std_time.count() * 2.0);
-  EXPECT_EQ(v, v_copy);  // ½á¹ûÈÔÒªÒ»ÖÂ
+  EXPECT_EQ(v, v_copy);  // ç»“æœä»è¦ä¸€è‡´
 }
 #endif

@@ -14,7 +14,7 @@ ThreadPool::ThreadPool(unsigned int num) {
       num = maxNum;
     }
   }
-  if (num == 0) {  // È·±£ÖÁÉÙÓĞÒ»¸öÏß³Ì
+  if (num == 0) {  // ç¡®ä¿è‡³å°‘æœ‰ä¸€ä¸ªçº¿ç¨‹
     num = 1;
   }
 

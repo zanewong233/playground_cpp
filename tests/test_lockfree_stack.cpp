@@ -1,4 +1,4 @@
-// ÎÄ¼ş£ºlockfree_stacks_typed_test.cpp
+// æ–‡ä»¶ï¼šlockfree_stacks_typed_test.cpp
 #include <gtest/gtest.h>
 
 #include <atomic>
@@ -21,7 +21,7 @@ using playground::LockfreeStackHazardPointer;
 using playground::LockfreeStackReferenceCounting;
 using playground::LockfreeStackSharedPtr;
 
-// ========== Í³Ò» Pop ½Ó¿ÚµÄÊÊÅä²ã£¨C++17 ¼ì²â¹ßÓÃ·¨£© ==========
+// ========== ç»Ÿä¸€ Pop æ¥å£çš„é€‚é…å±‚ï¼ˆC++17 æ£€æµ‹æƒ¯ç”¨æ³•ï¼‰ ==========
 
 namespace test_helpers {
 
@@ -38,13 +38,13 @@ struct has_bool_pop_out {
   static constexpr bool value = decltype(test<S>(0))::value;
 };
 
-// push Ö±½ÓÓÃÍ¬Ãûº¯Êı
+// push ç›´æ¥ç”¨åŒåå‡½æ•°
 template <class S, class V>
 inline void push(S& s, const V& v) {
   s.Push(v);
 }
 
-// Í³Ò»µÄ pop£º½«µ¯³öµÄÖµĞ´Èë out£¬²¢·µ»ØÊÇ·ñ³É¹¦
+// ç»Ÿä¸€çš„ popï¼šå°†å¼¹å‡ºçš„å€¼å†™å…¥ outï¼Œå¹¶è¿”å›æ˜¯å¦æˆåŠŸ
 template <class S, class V>
 inline bool pop(S& s, V& out) {
   if constexpr (has_bool_pop_out<S, V>::value) {
@@ -61,7 +61,7 @@ inline bool pop(S& s, V& out) {
 
 }  // namespace test_helpers
 
-// ========== ¸¨Öú£ºÆğÅÜÏßÆÁÕÏ£¨C++17£© ==========
+// ========== è¾…åŠ©ï¼šèµ·è·‘çº¿å±éšœï¼ˆC++17ï¼‰ ==========
 struct StartGate {
   std::mutex m;
   std::condition_variable cv;
@@ -77,7 +77,7 @@ struct StartGate {
   }
 };
 
-// ========== ÄãµÄ typed suite£¨ÔªËØÀàĞÍÎª int£© ==========
+// ========== ä½ çš„ typed suiteï¼ˆå…ƒç´ ç±»å‹ä¸º intï¼‰ ==========
 using Implementations = ::testing::Types<
     LockfreeStackDeleteList<int>, LockfreeStackHazardPointer<int>,
     LockfreeStackSharedPtr<int>, LockfreeStackReferenceCounting<int>>;
@@ -89,7 +89,7 @@ class LockfreeStackTest : public ::testing::Test {
 };
 TYPED_TEST_SUITE(LockfreeStackTest, Implementations);
 
-// ---- »ù´¡¹¦ÄÜ & ±ß½ç ----
+// ---- åŸºç¡€åŠŸèƒ½ & è¾¹ç•Œ ----
 TYPED_TEST(LockfreeStackTest, BasicPushPopLifo) {
   using S = TypeParam;
   S& s = this->stack_;
@@ -100,7 +100,7 @@ TYPED_TEST(LockfreeStackTest, BasicPushPopLifo) {
     EXPECT_EQ(v, expect);
   }
   int v = -1;
-  EXPECT_FALSE(test_helpers::pop(s, v));  // ¿Õ
+  EXPECT_FALSE(test_helpers::pop(s, v));  // ç©º
 }
 
 TYPED_TEST(LockfreeStackTest, PopFromEmpty) {
@@ -110,7 +110,7 @@ TYPED_TEST(LockfreeStackTest, PopFromEmpty) {
   EXPECT_FALSE(test_helpers::pop(s, v));
 }
 
-// ---- MPMC£ºÎŞ¶ªÊ§/ÎŞÖØ¸´ ----
+// ---- MPMCï¼šæ— ä¸¢å¤±/æ— é‡å¤ ----
 TYPED_TEST(LockfreeStackTest, MPMCIntegrityNoLossNoDup) {
   using S = TypeParam;
   S& s = this->stack_;
@@ -168,7 +168,7 @@ TYPED_TEST(LockfreeStackTest, MPMCIntegrityNoLossNoDup) {
   }
 }
 
-// ---- Ç¿Ñ¹Á¦£ºPop ºóÁ¢¼´ Push£¨¸ß ABA Ñ¹Á¦£© ----
+// ---- å¼ºå‹åŠ›ï¼šPop åç«‹å³ Pushï¼ˆé«˜ ABA å‹åŠ›ï¼‰ ----
 TYPED_TEST(LockfreeStackTest, StressABA_NoCrash_NoLoss) {
   using S = TypeParam;
   S& s = this->stack_;
@@ -200,7 +200,7 @@ TYPED_TEST(LockfreeStackTest, StressABA_NoCrash_NoLoss) {
   gate.open();
   for (auto& th : ts) th.join();
 
-  // Çå¿Õ²¢¼ì²é 0..N-1 ¸÷³öÏÖÒ»´Î
+  // æ¸…ç©ºå¹¶æ£€æŸ¥ 0..N-1 å„å‡ºç°ä¸€æ¬¡
   std::vector<char> mark(N, 0);
   int cnt = 0, x;
   while (test_helpers::pop(s, x)) {
@@ -216,7 +216,7 @@ TYPED_TEST(LockfreeStackTest, StressABA_NoCrash_NoLoss) {
   }
 }
 
-// ========== Õë¶Ô×ÊÔ´ÊÍ·Å£¨Counted£©½¨Á¢µÚ¶ş¸ö typed suite ==========
+// ========== é’ˆå¯¹èµ„æºé‡Šæ”¾ï¼ˆCountedï¼‰å»ºç«‹ç¬¬äºŒä¸ª typed suite ==========
 
 struct Counted {
   static std::atomic<int> live;
@@ -269,12 +269,12 @@ TYPED_TEST(LockfreeStackCountedTest, Reclaim_AllReleasedEventually) {
     for (auto& th : ths) th.join();
     Counted tmp;
     while (test_helpers::pop(s, tmp)) {
-    }  // Çå¿Õ
+    }  // æ¸…ç©º
   }
   EXPECT_EQ(Counted::live.load(std::memory_order_relaxed), 0);
 }
 
-// ========== Õë¶Ô¿É¼ûĞÔ£¨Big£©½¨Á¢µÚÈı¸ö typed suite ==========
+// ========== é’ˆå¯¹å¯è§æ€§ï¼ˆBigï¼‰å»ºç«‹ç¬¬ä¸‰ä¸ª typed suite ==========
 
 struct Big {
   int a;

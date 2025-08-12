@@ -24,17 +24,17 @@ class Sorter {
     if (list.size() < 2) {
       return list;
     }
-    // È¡³öÖĞ¼äµã
+    // å–å‡ºä¸­é—´ç‚¹
     std::list<T> res;
     res.splice(res.end(), list, list.begin());
     const T& divide_point = *res.begin();
 
-    // ½«list °´ÕÕÖĞ¼äµã·ÖÇø
+    // å°†list æŒ‰ç…§ä¸­é—´ç‚¹åˆ†åŒº
     const auto divide_it = std::partition(
         list.begin(), list.end(),
         [&divide_point](const T& val) { return val < divide_point; });
 
-    // Ç°°ë²¿·ÖÅÅĞò
+    // å‰åŠéƒ¨åˆ†æ’åº
     ChunkToSort lower_chunk;
     lower_chunk.data_.splice(lower_chunk.data_.begin(), list, list.begin(),
                              divide_it);
@@ -44,11 +44,11 @@ class Sorter {
       threads_.emplace_back(&Sorter::SortThread, this);
     }
 
-    // ºó°ë²¿·ÖÅÅĞò
+    // ååŠéƒ¨åˆ†æ’åº
     std::list<T> sorted_higher = DoSort(std::move(list));
     res.splice(res.end(), sorted_higher);
 
-    // ÈÎÎñÇÔÈ¡
+    // ä»»åŠ¡çªƒå–
     while (lower_fut.wait_for(std::chrono::seconds(0)) !=
            std::future_status::ready) {
       TrySortChunk();
@@ -90,28 +90,28 @@ class SorterThreadPool {
     if (list.size() < 2) {
       return list;
     }
-    // È¡³öÖĞ¼äµã
+    // å–å‡ºä¸­é—´ç‚¹
     MoveMedianOfThree2Begin(list);
     std::list<T> res;
     res.splice(res.end(), list, list.begin());
     const T& divide_point = *res.begin();
 
-    // ½«list °´ÕÕÖĞ¼äµã·ÖÇø
+    // å°†list æŒ‰ç…§ä¸­é—´ç‚¹åˆ†åŒº
     const auto divide_it = std::partition(
         list.begin(), list.end(),
         [&divide_point](const T& val) { return val < divide_point; });
 
-    // Ç°°ë²¿·ÖÅÅĞò
+    // å‰åŠéƒ¨åˆ†æ’åº
     std::list<T> lower_chunk;
     lower_chunk.splice(lower_chunk.begin(), list, list.begin(), divide_it);
     auto lower_fut = pool_.AddTask(
         std::bind(&SorterThreadPool::DoSort, this, std::move(lower_chunk)));
 
-    // ºó°ë²¿·ÖÅÅĞò
+    // ååŠéƒ¨åˆ†æ’åº
     std::list<T> sorted_higher = DoSort(std::move(list));
     res.splice(res.end(), sorted_higher);
 
-    // ÈÎÎñÇÔÈ¡
+    // ä»»åŠ¡çªƒå–
     while (lower_fut.wait_for(std::chrono::seconds(0)) !=
            std::future_status::ready) {
       pool_.RunPendingTasks();
@@ -142,7 +142,7 @@ class SorterThreadPool {
     if (*mid_it > *right_it) {
       std::iter_swap(mid_it, right_it);
     }
-    std::iter_swap(left_it, mid_it);  // ÒÆ¶¯µ½¿ªÊ¼Î»ÖÃ
+    std::iter_swap(left_it, mid_it);  // ç§»åŠ¨åˆ°å¼€å§‹ä½ç½®
   }
 
   ThreadPool pool_;

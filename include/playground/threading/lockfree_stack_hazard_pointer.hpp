@@ -1,5 +1,5 @@
 /*
- * ʵ�ֽ�Ϊ���ӣ����ܻ���΢����Ч�ʡ��÷���Ҳ���ܴ���ר����Ȩ����
+ * 实现较为复杂，可能会略微拖慢效率。该方法也可能存在专利授权问题
  */
 #ifndef PLAYGROUND_THREADING_LOCKFREE_STACK_HAZARD_POINTER_H_
 #define PLAYGROUND_THREADING_LOCKFREE_STACK_HAZARD_POINTER_H_

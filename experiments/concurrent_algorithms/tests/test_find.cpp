@@ -14,7 +14,7 @@
 
 using namespace playground::experiments::parallel;
 
-/* ---------- ¸¨ÖúÀàĞÍ ---------- */
+/* ---------- è¾…åŠ©ç±»å‹ ---------- */
 struct ThrowCmp {
   int value;
   bool operator==(const ThrowCmp& rhs) const {
@@ -23,7 +23,7 @@ struct ThrowCmp {
   }
 };
 
-/* ---------- ¢ñ. ¹¦ÄÜÕıÈ·ĞÔ ---------- */
+/* ---------- â… . åŠŸèƒ½æ­£ç¡®æ€§ ---------- */
 TEST(FindParallel_Functional, EmptyRange) {
   std::vector<int> v;
   EXPECT_EQ(Find(v.begin(), v.end(), 1), v.end());
@@ -54,14 +54,14 @@ TEST(FindParallel_Functional, NoHit) {
   EXPECT_EQ(Find(v.begin(), v.end(), 5), v.end());
 }
 
-// ÖØ¸´Öµ±£Ö¤·µ»ØµÚÒ»´¦
+// é‡å¤å€¼ä¿è¯è¿”å›ç¬¬ä¸€å¤„
 TEST(FindParallel_Functional, DuplicateKeepsEarliest_Vector) {
   std::vector<int> v{1, 2, 3, 2, 1};
   auto it = Find(v.begin(), v.end(), 2);
   EXPECT_EQ(it, v.begin() + 1);
 }
 
-// Í¬Ò»Âß¼­ÓÃ list / forward_list ÔÙ²âÒ»±é
+// åŒä¸€é€»è¾‘ç”¨ list / forward_list å†æµ‹ä¸€é
 TEST(FindParallel_Functional, DuplicateKeepsEarliest_List) {
   std::list<int> lst{1, 2, 3, 2, 1};
   auto it = Find(lst.begin(), lst.end(), 2);
@@ -76,9 +76,9 @@ TEST(FindParallel_Functional, DuplicateKeepsEarliest_ForwardList) {
   EXPECT_EQ(std::distance(flst.begin(), it), 1);
 }
 
-/* ---------- ¢ò. ²¢·¢³¡¾° ---------- */
+/* ---------- â…¡. å¹¶å‘åœºæ™¯ ---------- */
 
-// ´óÊı×é¶à´ÎÃüÖĞ£ºÑéÖ¤ÎŞ¾ºÌ¬ & ÎÈ¶¨·µ»Ø
+// å¤§æ•°ç»„å¤šæ¬¡å‘½ä¸­ï¼šéªŒè¯æ— ç«æ€ & ç¨³å®šè¿”å›
 TEST(FindParallel_Concurrency, LargeArrayHit) {
   // constexpr std::size_t N = 100'000'000;
   constexpr std::size_t N = 1'000'000;
@@ -94,7 +94,7 @@ TEST(FindParallel_Concurrency, LargeArrayHit) {
   }
 }
 
-// ´óÊı×éÎŞÃüÖĞ
+// å¤§æ•°ç»„æ— å‘½ä¸­
 TEST(FindParallel_Concurrency, LargeArrayMiss) {
   constexpr std::size_t N = 1'000'000;
   std::vector<int> v(N);
@@ -104,14 +104,14 @@ TEST(FindParallel_Concurrency, LargeArrayMiss) {
   EXPECT_EQ(it, v.end());
 }
 
-/* ---------- ¢ó. Òì³£´«²¥ / ×ÊÔ´ ---------- */
+/* ---------- â…¢. å¼‚å¸¸ä¼ æ’­ / èµ„æº ---------- */
 TEST(FindParallel_Exception, PropagateCompareException) {
   std::vector<ThrowCmp> v{{1}, {2}, {3}};
   EXPECT_THROW(Find(v.begin(), v.end(), ThrowCmp{2}), std::runtime_error);
 }
 
-/* ---------- ¢ô. ÔËĞĞÊ±»·¾³£¨¿ÉÑ¡ĞÔÄÜ¶ÏÑÔÊ¾Àı£© ---------- */
-// ½öÔÚ Release ¹¹½¨ÏÂ²Å½øĞĞ¼òµ¥ĞÔÄÜ»Ø¹é
+/* ---------- â…£. è¿è¡Œæ—¶ç¯å¢ƒï¼ˆå¯é€‰æ€§èƒ½æ–­è¨€ç¤ºä¾‹ï¼‰ ---------- */
+// ä»…åœ¨ Release æ„å»ºä¸‹æ‰è¿›è¡Œç®€å•æ€§èƒ½å›å½’
 #ifdef NDEBUG
 TEST(FindParallel_Perf, NotMuchSlowerThanStdFind) {
   constexpr std::size_t N = 2'000'000;
@@ -132,13 +132,13 @@ TEST(FindParallel_Perf, NotMuchSlowerThanStdFind) {
   ms std_time = t1 - t0;
   ms par_time = t2 - t1;
 
-  // ÔÊĞí²¢ĞĞÊµÏÖ <2¡Á std::find Ê±¼ä£»Èô»úÆ÷ºË¶àÍ¨³£»á¸ü¿ì
+  // å…è®¸å¹¶è¡Œå®ç° <2Ã— std::find æ—¶é—´ï¼›è‹¥æœºå™¨æ ¸å¤šé€šå¸¸ä¼šæ›´å¿«
   EXPECT_LT(par_time.count(), std_time.count() * 2.0);
 }
 #endif
 
-// µİ¹é°æ±¾²âÊÔ
-/* ---------- ¢ñ. ¹¦ÄÜÕıÈ·ĞÔ ---------- */
+// é€’å½’ç‰ˆæœ¬æµ‹è¯•
+/* ---------- â… . åŠŸèƒ½æ­£ç¡®æ€§ ---------- */
 TEST(FindRecursiveParallel_Functional, EmptyRange) {
   std::vector<int> v;
   EXPECT_EQ(FindRecursive(v.begin(), v.end(), 1), v.end());
@@ -169,14 +169,14 @@ TEST(FindRecursiveParallel_Functional, NoHit) {
   EXPECT_EQ(FindRecursive(v.begin(), v.end(), 5), v.end());
 }
 
-// ÖØ¸´Öµ±£Ö¤·µ»ØµÚÒ»´¦
+// é‡å¤å€¼ä¿è¯è¿”å›ç¬¬ä¸€å¤„
 TEST(FindRecursiveParallel_Functional, DuplicateKeepsEarliest_Vector) {
   std::vector<int> v{1, 2, 3, 2, 1};
   auto it = FindRecursive(v.begin(), v.end(), 2);
   EXPECT_EQ(it, v.begin() + 1);
 }
 
-// Í¬Ò»Âß¼­ÓÃ list / forward_list ÔÙ²âÒ»±é
+// åŒä¸€é€»è¾‘ç”¨ list / forward_list å†æµ‹ä¸€é
 TEST(FindRecursiveParallel_Functional, DuplicateKeepsEarliest_List) {
   std::list<int> lst{1, 2, 3, 2, 1};
   auto it = FindRecursive(lst.begin(), lst.end(), 2);
@@ -191,9 +191,9 @@ TEST(FindRecursiveParallel_Functional, DuplicateKeepsEarliest_ForwardList) {
   EXPECT_EQ(std::distance(flst.begin(), it), 1);
 }
 
-/* ---------- ¢ò. ²¢·¢³¡¾° ---------- */
+/* ---------- â…¡. å¹¶å‘åœºæ™¯ ---------- */
 
-// ´óÊı×é¶à´ÎÃüÖĞ£ºÑéÖ¤ÎŞ¾ºÌ¬ & ÎÈ¶¨·µ»Ø
+// å¤§æ•°ç»„å¤šæ¬¡å‘½ä¸­ï¼šéªŒè¯æ— ç«æ€ & ç¨³å®šè¿”å›
 TEST(FindRecursiveParallel_Concurrency, LargeArrayHit) {
   constexpr std::size_t N = 1'000'00;
   std::vector<int> v(N);
@@ -207,7 +207,7 @@ TEST(FindRecursiveParallel_Concurrency, LargeArrayHit) {
   }
 }
 
-// ´óÊı×éÎŞÃüÖĞ
+// å¤§æ•°ç»„æ— å‘½ä¸­
 TEST(FindRecursiveParallel_Concurrency, LargeArrayMiss) {
   constexpr std::size_t N = 1'000'00;
   std::vector<int> v(N);
@@ -217,7 +217,7 @@ TEST(FindRecursiveParallel_Concurrency, LargeArrayMiss) {
   EXPECT_EQ(it, v.end());
 }
 
-/* ---------- ¢ó. Òì³£´«²¥ / ×ÊÔ´ ---------- */
+/* ---------- â…¢. å¼‚å¸¸ä¼ æ’­ / èµ„æº ---------- */
 TEST(FindRecursiveParallel_Exception, PropagateCompareException) {
   std::vector<ThrowCmp> v{{1}, {2}, {3}};
   EXPECT_THROW(FindRecursive(v.begin(), v.end(), ThrowCmp{2}),

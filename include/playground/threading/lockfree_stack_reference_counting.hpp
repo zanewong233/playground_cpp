@@ -52,7 +52,7 @@ class LockfreeStackReferenceCounting {
   struct Node;
   struct CountedNodePtr {
     Node* node_ = nullptr;
-    unsigned external_count_ = 0;  // Íâ²¿ÒıÓÃ¼ÆÊı£ºÓĞ¶àÉÙÏß³ÌÒıÓÃÁË±¾½Úµã
+    unsigned external_count_ = 0;  // å¤–éƒ¨å¼•ç”¨è®¡æ•°ï¼šæœ‰å¤šå°‘çº¿ç¨‹å¼•ç”¨äº†æœ¬èŠ‚ç‚¹
   };
 
   struct Node {
@@ -62,7 +62,7 @@ class LockfreeStackReferenceCounting {
     std::shared_ptr<T> data_;
     CountedNodePtr next_;
     std::atomic_uint
-        internal_count_;  // ÄÚ²¿ÒıÓÃ¼ÆÊı£ºÓĞ¶àÉÙÏß³Ì¹é»¹ÁË±¾½ÚµãµÄÒıÓÃ
+        internal_count_;  // å†…éƒ¨å¼•ç”¨è®¡æ•°ï¼šæœ‰å¤šå°‘çº¿ç¨‹å½’è¿˜äº†æœ¬èŠ‚ç‚¹çš„å¼•ç”¨
   };
 
   void IncreaseHeadCount(CountedNodePtr& old_head) {

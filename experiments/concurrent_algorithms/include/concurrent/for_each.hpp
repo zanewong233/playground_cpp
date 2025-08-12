@@ -15,7 +15,7 @@ void ForEach(Iterator first, Iterator last, Func f) {
     return;
   }
 
-  // ¶ÔÊı¾İ½øĞĞ·Ö¿é
+  // å¯¹æ•°æ®è¿›è¡Œåˆ†å—
   constexpr unsigned long min_pre_thread = 25;
   const unsigned long max_threads =
       (length + min_pre_thread - 1) / min_pre_thread;
@@ -27,8 +27,8 @@ void ForEach(Iterator first, Iterator last, Func f) {
 
   const unsigned long block_size = length / num_threads;
 
-  // °´ÕÕ¿é´óĞ¡Òì²½Ö´ĞĞ
-  // ÏÈÉêÇë¿Õ¼ä¿ÉÒÔ·ÀÖ¹ºóĞøpush_backÅ×³öÒì³£
+  // æŒ‰ç…§å—å¤§å°å¼‚æ­¥æ‰§è¡Œ
+  // å…ˆç”³è¯·ç©ºé—´å¯ä»¥é˜²æ­¢åç»­push_backæŠ›å‡ºå¼‚å¸¸
   std::vector<std::future<void>> fut_list(num_threads - 1);
   std::vector<std::thread> threads(num_threads - 1);
   ThreadsGuard thd_guard(threads);
@@ -47,7 +47,7 @@ void ForEach(Iterator first, Iterator last, Func f) {
   }
   std::for_each(block_start, last, f);
 
-  // ×èÈûµÈ´ıÍê³É
+  // é˜»å¡ç­‰å¾…å®Œæˆ
   for (auto& fut : fut_list) {
     fut.get();
   }

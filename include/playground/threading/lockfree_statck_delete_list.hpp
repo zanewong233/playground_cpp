@@ -1,5 +1,5 @@
 /*
- * ÔÚ¸ßÕùÓÃµÄÇé¿öÏÂÉ¾³ıÁĞ±í¿ÉÄÜ»áÒ»Ö±À©ÕÅ
+ * åœ¨é«˜äº‰ç”¨çš„æƒ…å†µä¸‹åˆ é™¤åˆ—è¡¨å¯èƒ½ä¼šä¸€ç›´æ‰©å¼ 
  */
 #ifndef PLAYGROUND_THREADING_LOCKFREE_STACK_DELETE_LIST_H_
 #define PLAYGROUND_THREADING_LOCKFREE_STACK_DELETE_LIST_H_
@@ -45,7 +45,7 @@ class LockfreeStackDeleteList {
 
   void TryReclaim(Node* node) {
     if (thread_in_loop_.load(std::memory_order_relaxed) == 1) {
-      // Ö»ÓĞµ±Ç°Ïß³ÌÄÜ¿´µ½node
+      // åªæœ‰å½“å‰çº¿ç¨‹èƒ½çœ‹åˆ°node
       auto tmp_to_delete =
           to_delete_list_.exchange(nullptr, std::memory_order_acquire);
       if (thread_in_loop_.fetch_sub(1, std::memory_order_relaxed) == 1) {

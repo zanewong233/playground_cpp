@@ -100,7 +100,7 @@ class ThreadPool {
       }
     }
 
-    // try È·±£Ïß³Ì³Ø×´Ì¬Ò»ÖÂ£¬ÒªÃ´È«²¿Æô¶¯³É¹¦£¬ÒªÃ´È«²¿Í£Ö¹
+    // try ç¡®ä¿çº¿ç¨‹æ± çŠ¶æ€ä¸€è‡´ï¼Œè¦ä¹ˆå…¨éƒ¨å¯åŠ¨æˆåŠŸï¼Œè¦ä¹ˆå…¨éƒ¨åœæ­¢
     try {
       queues_.reserve(thread_count);
       threads_.reserve(thread_count);
@@ -109,7 +109,7 @@ class ThreadPool {
         threads_.emplace_back(&ThreadPool::ThreadTask, this, i);
       }
     } catch (...) {
-      done_ = true;  // Í¨ÖªÒÑÓĞÏß³Ì¾¡¿ìÍË³ö
+      done_ = true;  // é€šçŸ¥å·²æœ‰çº¿ç¨‹å°½å¿«é€€å‡º
       throw;
     }
   }
@@ -168,7 +168,7 @@ class ThreadPool {
     return false;
   }
 
-  // ³ÉÔ±µÄÉùÃ÷Ë³ĞòºÜÖØÒª£¬¾ö¶¨Îö¹¹Ê±ÊÇ·ñÄÜ¶ÁÈ¡ºÏ·¨Êı¾İ
+  // æˆå‘˜çš„å£°æ˜é¡ºåºå¾ˆé‡è¦ï¼Œå†³å®šææ„æ—¶æ˜¯å¦èƒ½è¯»å–åˆæ³•æ•°æ®
   std::atomic_bool done_;
   playground::ThreadsafeQueue<TaskType> pool_work_queue_;
   std::vector<std::unique_ptr<WorkStealingQueue>> queues_;

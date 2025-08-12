@@ -13,7 +13,7 @@
 
 using namespace playground::experiments::parallel;
 
-// 1. ¿ÕÁĞ±í
+// 1. ç©ºåˆ—è¡¨
 TEST(SorterThreadPoolTest, EmptyList) {
   SorterThreadPool<int> pool;
   std::list<int> input;
@@ -21,7 +21,7 @@ TEST(SorterThreadPoolTest, EmptyList) {
   EXPECT_TRUE(output.empty());
 }
 
-// 2. µ¥ÔªËØÁĞ±í
+// 2. å•å…ƒç´ åˆ—è¡¨
 TEST(SorterThreadPoolTest, SingleElement) {
   SorterThreadPool<int> pool;
   std::list<int> input = {42};
@@ -30,7 +30,7 @@ TEST(SorterThreadPoolTest, SingleElement) {
   EXPECT_EQ(output.front(), 42);
 }
 
-// 3. ÒÑÅÅºÃĞòµÄÁĞ±í
+// 3. å·²æ’å¥½åºçš„åˆ—è¡¨
 TEST(SorterThreadPoolTest, AlreadySorted) {
   SorterThreadPool<int> pool;
   std::list<int> input = {1, 2, 3, 4, 5};
@@ -38,7 +38,7 @@ TEST(SorterThreadPoolTest, AlreadySorted) {
   EXPECT_EQ(output, input);
 }
 
-// 4. ÄæĞòÁĞ±í
+// 4. é€†åºåˆ—è¡¨
 TEST(SorterThreadPoolTest, ReverseOrder) {
   SorterThreadPool<int> pool;
   std::list<int> input = {5, 4, 3, 2, 1};
@@ -47,7 +47,7 @@ TEST(SorterThreadPoolTest, ReverseOrder) {
   EXPECT_EQ(output, expect);
 }
 
-// 5. º¬ÖØ¸´ÔªËØµÄÂÒĞòÁĞ±í
+// 5. å«é‡å¤å…ƒç´ çš„ä¹±åºåˆ—è¡¨
 TEST(SorterThreadPoolTest, WithDuplicates) {
   SorterThreadPool<int> pool;
   std::list<int> input = {3, 1, 2, 3, 2, 1};
@@ -56,7 +56,7 @@ TEST(SorterThreadPoolTest, WithDuplicates) {
   EXPECT_EQ(output, expect);
 }
 
-// 6. ×Ô¶¨ÒåÀàĞÍ
+// 6. è‡ªå®šä¹‰ç±»å‹
 struct Person {
   std::string name;
   int age;
@@ -77,8 +77,8 @@ TEST(SorterThreadPoolTest, CustomType) {
   EXPECT_EQ(ages, expect);
 }
 
-// 7. Ê¹ÓÃ×Ô¶¨Òå±È½ÏÆ÷£¨¼ÙÉèÖØÔØ DoSort Ö§³Ö´« comparator£©
-// Èç¹û DoSort Ö§³ÖµÚ¶ş¸öÄ£°å²ÎÊı»òÖØÔØ£¬¿É²âÊÔ½µĞò
+// 7. ä½¿ç”¨è‡ªå®šä¹‰æ¯”è¾ƒå™¨ï¼ˆå‡è®¾é‡è½½ DoSort æ”¯æŒä¼  comparatorï¼‰
+// å¦‚æœ DoSort æ”¯æŒç¬¬äºŒä¸ªæ¨¡æ¿å‚æ•°æˆ–é‡è½½ï¼Œå¯æµ‹è¯•é™åº
 #if 0
 TEST(SorterThreadPoolTest, CustomComparator) {
     SorterThreadPool<int> pool;
@@ -89,7 +89,7 @@ TEST(SorterThreadPoolTest, CustomComparator) {
 }
 #endif
 
-// 8. ´ó¹æÄ£ĞÔÄÜÑ¹Á¦²âÊÔ£¨½ö×ö¹¦ÄÜ²âÊÔ£¬²»¼ÆÊ±£©
+// 8. å¤§è§„æ¨¡æ€§èƒ½å‹åŠ›æµ‹è¯•ï¼ˆä»…åšåŠŸèƒ½æµ‹è¯•ï¼Œä¸è®¡æ—¶ï¼‰
 TEST(SorterThreadPoolTest, LargeRandom) {
   SorterThreadPool<int> pool;
   std::list<int> input;
@@ -104,7 +104,7 @@ TEST(SorterThreadPoolTest, LargeRandom) {
   EXPECT_EQ(prev, N);
 }
 
-// 9. ²¢·¢°²È«ĞÔ²âÊÔ£º¶àÏß³ÌÍ¬Ê±µ÷ÓÃ£¨²»Í¬ÊµÀı£©
+// 9. å¹¶å‘å®‰å…¨æ€§æµ‹è¯•ï¼šå¤šçº¿ç¨‹åŒæ—¶è°ƒç”¨ï¼ˆä¸åŒå®ä¾‹ï¼‰
 TEST(SorterThreadPoolTest, ConcurrentCalls) {
   auto worker = []() {
     SorterThreadPool<int> pool;

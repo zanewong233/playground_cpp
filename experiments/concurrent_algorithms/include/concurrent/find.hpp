@@ -27,8 +27,8 @@ Iterator Find(Iterator first, Iterator last, const MatchType& val) {
           result->set_exception(std::current_exception());
           done_flag->store(true);
         } catch (...) {
-          // ���promise �Ѿ����ù����ٴ����û����쳣
-          // �˴�ֱ���̵��ô���
+          // 如果promise 已经设置过，再次设置会抛异常
+          // 此处直接吞掉该错误
         }
       }
     }
