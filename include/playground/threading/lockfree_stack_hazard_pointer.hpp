@@ -20,7 +20,8 @@ class HpOwner {
     for (int i = 0; i < max_hazard_pointers; i++) {
       std::thread::id init_id;
       if (hazard_pointers[i].thread_id_.compare_exchange_strong(
-              init_id, std::this_thread::get_id())) {
+              init_id, std::this_thread::get_id(), std::memory_order_acq_rel,
+              std::memory_order_relaxed)) {
         p_ = &hazard_pointers[i];
         break;
       }
@@ -31,8 +32,8 @@ class HpOwner {
     }
   }
   ~HpOwner() {
-    p_->hp_.store(nullptr);
-    p_->thread_id_.store({});
+    p_->hp_.store(nullptr, std::memory_order_release);
+    p_->thread_id_.store({}, std::memory_order_release);
   }
 
   std::atomic<void*>& GetPointer() const { return p_->hp_; }
@@ -61,26 +62,30 @@ template <typename T>
 class LockfreeStackHazardPointer {
  public:
   LockfreeStackHazardPointer() : head_(nullptr), nodes_to_reclaim_(nullptr) {}
+  ~LockfreeStackHazardPointer() { while (Pop()); }
 
   void Push(const T& data) {
     const auto new_node = new Node(data);
-    new_node->next_ = head_.load();
-    while (!head_.compare_exchange_weak(new_node->next_, new_node));
+    new_node->next_ = head_.load(std::memory_order_relaxed);
+    while (!head_.compare_exchange_weak(new_node->next_, new_node,
+                                        std::memory_order_release,
+                                        std::memory_order_relaxed));
   }
 
   std::shared_ptr<T> Pop() {
     std::atomic<void*>& hp = GetHazardPointerForCurrentThread();
-    Node* old_head = head_.load();
+    Node* old_head = head_.load(std::memory_order_acquire);
     do {
       Node* tmp = nullptr;
       do {
         tmp = old_head;
-        hp.store(old_head);
-        old_head = head_.load();
+        hp.store(old_head, std::memory_order_release);
+        old_head = head_.load(std::memory_order_acquire);
       } while (tmp != old_head);
     } while (old_head &&
-             !head_.compare_exchange_strong(old_head, old_head->next_));
-    hp.store(nullptr);
+             !head_.compare_exchange_strong(old_head, old_head->next_,
+                                            std::memory_order_relaxed));
+    hp.store(nullptr, std::memory_order_release);
 
     std::shared_ptr<T> res;
     if (old_head) {
@@ -111,7 +116,7 @@ class LockfreeStackHazardPointer {
 
   bool OutstandingHazardPointersFor(void* node) {
     for (int i = 0; i < max_hazard_pointers; i++) {
-      if (hazard_pointers[i].hp_.load() == node) {
+      if (hazard_pointers[i].hp_.load(std::memory_order_acquire) == node) {
         return true;
       }
     }
@@ -121,7 +126,8 @@ class LockfreeStackHazardPointer {
   void ReclaimLater(Node* node) { AddToReclaimList(new DataToReclaim(node)); }
 
   void DeleteNodesWithNoHazards() {
-    auto current = nodes_to_reclaim_.exchange(nullptr);
+    auto current =
+        nodes_to_reclaim_.exchange(nullptr, std::memory_order_acquire);
     while (current) {
       const auto next = current->next_;
       if (OutstandingHazardPointersFor(current->data_)) {
@@ -134,8 +140,10 @@ class LockfreeStackHazardPointer {
   }
 
   void AddToReclaimList(DataToReclaim* node) {
-    node->next_ = nodes_to_reclaim_.load();
-    while (!nodes_to_reclaim_.compare_exchange_weak(node->next_, node));
+    node->next_ = nodes_to_reclaim_.load(std::memory_order_relaxed);
+    while (!nodes_to_reclaim_.compare_exchange_weak(node->next_, node,
+                                                    std::memory_order_release,
+                                                    std::memory_order_relaxed));
   }
 
   std::atomic<Node*> head_;
