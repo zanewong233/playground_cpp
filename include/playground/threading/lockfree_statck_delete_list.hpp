@@ -1,6 +1,6 @@
-/* 
-* 在高争用的情况下删除列表可能会一直扩张
-*/
+/*
+ * 在高争用的情况下删除列表可能会一直扩张
+ */
 #ifndef PLAYGROUND_THREADING_LOCKFREE_STACK_DELETE_LIST_H_
 #define PLAYGROUND_THREADING_LOCKFREE_STACK_DELETE_LIST_H_
 #include <memory>
@@ -14,14 +14,18 @@ class LockfreeStackDeleteList {
 
   void Push(const T& data) {
     const auto new_node = new Node(data);
-    new_node->next_ = head_.load();
-    while (!head_.compare_exchange_weak(new_node->next_, new_node));
+    new_node->next_ = head_.load(std::memory_order_relaxed);
+    while (!head_.compare_exchange_weak(new_node->next_, new_node,
+                                        std::memory_order_release,
+                                        std::memory_order_relaxed));
   }
 
   std::shared_ptr<T> Pop() {
-    ++thread_in_loop_;
-    Node* old_head = head_.load();
-    while (old_head && !head_.compare_exchange_weak(old_head, old_head->next_));
+    thread_in_loop_.fetch_add(1, std::memory_order_relaxed);
+    Node* old_head = head_.load(std::memory_order_relaxed);
+    while (old_head && !head_.compare_exchange_weak(old_head, old_head->next_,
+                                                    std::memory_order_acquire,
+                                                    std::memory_order_relaxed));
 
     std::shared_ptr<T> res;
     if (old_head) {
@@ -40,10 +44,11 @@ class LockfreeStackDeleteList {
   };
 
   void TryReclaim(Node* node) {
-    if (thread_in_loop_.load() == 1) {
+    if (thread_in_loop_.load(std::memory_order_relaxed) == 1) {
       // 只有当前线程能看到node
-      auto tmp_to_delete = to_delete_list_.exchange(nullptr);
-      if (--thread_in_loop_ == 0) {
+      auto tmp_to_delete =
+          to_delete_list_.exchange(nullptr, std::memory_order_acquire);
+      if (thread_in_loop_.fetch_sub(1, std::memory_order_relaxed) == 1) {
         DeleteNodes(tmp_to_delete);
       } else if (tmp_to_delete) {
         ChainPendingNodes(tmp_to_delete);
@@ -55,7 +60,7 @@ class LockfreeStackDeleteList {
         ChainPendingNode(node);
       }
 
-      --thread_in_loop_;
+      thread_in_loop_.fetch_sub(1, std::memory_order_relaxed);
     }
   }
 
@@ -77,8 +82,10 @@ class LockfreeStackDeleteList {
   }
 
   void ChainPendingNodes(Node* first, Node* last) {
-    last->next_ = to_delete_list_;
-    while (!to_delete_list_.compare_exchange_weak(last->next_, first));
+    last->next_ = to_delete_list_.load(std::memory_order_relaxed);
+    while (!to_delete_list_.compare_exchange_weak(last->next_, first,
+                                                  std::memory_order_release,
+                                                  std::memory_order_relaxed));
   }
 
   void ChainPendingNode(Node* node) { ChainPendingNodes(node, node); }
