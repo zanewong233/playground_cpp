@@ -21,7 +21,7 @@ class LockfreeStackReferenceCounting {
 
   std::shared_ptr<T> Pop() {
     while (true) {
-      CountedNodePtr old_head = head_.load();
+      CountedNodePtr old_head = head_.load(std::memory_order_relaxed);
       IncreaseHeadCount(old_head);
       Node* const node = old_head.node_;
       if (!node) {
