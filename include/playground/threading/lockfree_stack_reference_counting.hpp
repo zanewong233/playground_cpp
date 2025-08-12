@@ -13,8 +13,10 @@ class LockfreeStackReferenceCounting {
     CountedNodePtr new_node;
     new_node.node_ = new Node(data);
     new_node.external_count_ = 1;
-    new_node.node_->next = head_.load();
-    while (!head_.compare_exchange_weak(new_node.node_->next, new_node));
+    new_node.node_->next_ = head_.load(std::memory_order_relaxed);
+    while (!head_.compare_exchange_weak(new_node.node_->next_, new_node,
+                                        std::memory_order_release,
+                                        std::memory_order_relaxed));
   }
 
   std::shared_ptr<T> Pop() {
@@ -26,17 +28,20 @@ class LockfreeStackReferenceCounting {
         return {};
       }
 
-      if (head_.compare_exchange_strong(old_head, node->next)) {
+      if (head_.compare_exchange_strong(old_head, node->next_,
+                                        std::memory_order_relaxed)) {
         std::shared_ptr<T> res;
         res.swap(node->data_);
         const int count_increase = old_head.external_count_ - 2;
-        if (node->internal_count_.fetch_add(count_increase) ==
-            -count_increase) {
+        if (node->internal_count_.fetch_add(
+                count_increase, std::memory_order_release) == -count_increase) {
           delete node;
         }
         return res;
       } else {
-        if (node->internal_count_.fetch_sub(1) == 1) {
+        if (node->internal_count_.fetch_sub(1, std::memory_order_relaxed) ==
+            1) {
+          node->internal_count_.load(std::memory_order_acquire);
           delete node;
         }
       }
@@ -55,7 +60,7 @@ class LockfreeStackReferenceCounting {
         : data_(std::make_shared<T>(data)), internal_count_(0) {}
 
     std::shared_ptr<T> data_;
-    CountedNodePtr next;
+    CountedNodePtr next_;
     std::atomic_uint
         internal_count_;  // 内部引用计数：有多少线程归还了本节点的引用
   };
@@ -65,7 +70,9 @@ class LockfreeStackReferenceCounting {
     do {
       new_head = old_head;
       ++new_head.external_count_;
-    } while (!head_.compare_exchange_strong(old_head, new_head));
+    } while (!head_.compare_exchange_strong(old_head, new_head,
+                                            std::memory_order_acquire,
+                                            std::memory_order_relaxed));
     old_head.external_count_ = new_head.external_count_;
   }
 
