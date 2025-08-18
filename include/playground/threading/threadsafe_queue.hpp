@@ -35,7 +35,7 @@ class ThreadsafeQueue {
   std::shared_ptr<T> try_pop() {
     std::lock_guard lock(head_mtx_);
     if (head_.get() == get_tail()) {
-      return false;
+      return {};
     }
     auto old_head = pop_head();
     return old_head->data_;
