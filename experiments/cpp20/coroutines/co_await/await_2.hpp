@@ -1,10 +1,11 @@
+// 符合co_await 表达式情况2：表达式可以通过operator await函数转为awaiter 对象
 #ifndef PLAYGROUND_AWAIT_2_HPP
 #define PLAYGROUND_AWAIT_2_HPP
 #include <coroutine>
 #include <iostream>
 #include <thread>
 
-#include "await_task.hpp"
+#include "common.hpp"
 
 namespace await_2 {
 struct MyAwaitable {
@@ -23,6 +24,9 @@ struct MyAwaitable {
   co_return v;
 }
 
-void run_example() { auto g = foo(); }
+void run_example() {
+  auto g = foo();
+  g.run_to_end();
+}
 }  // namespace await_2
 #endif  // !PLAYGROUND_AWAIT_2_HPP

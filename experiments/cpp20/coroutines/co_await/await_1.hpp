@@ -1,35 +1,29 @@
+// 符合co_await 表达式情况1：表达式直接是一个waiter 对象
 #ifndef PLAYGROUND_AWAIT_1_HPP
 #define PLAYGROUND_AWAIT_1_HPP
 #include <coroutine>
 #include <iostream>
 #include <thread>
 
-#include "await_task.hpp"
+#include "common.hpp"
 
 namespace await_1 {
 struct SimpleAwaiter {
   int* p_ = nullptr;
-  bool await_ready() const noexcept { return *p_ == 0; }  // 0 就绪，不会挂起
-  void await_suspend(std::coroutine_handle<>) {}
-  int await_resume() const noexcept { return (*p_)--; }
+  bool await_ready() const noexcept {
+    LOG_FUNC();
+    return *p_ == 0;
+  }  // 0 就绪，不会挂起
+  void await_suspend(std::coroutine_handle<>) { LOG_FUNC(); }
+  int await_resume() const noexcept {
+    LOG_FUNC();
+    return (*p_)--;
+  }
 };
 
-::await_task::Task demo_co_await(int n) {
+::common::Task foo(int n) {
   int counter = n;
   while (true) {
-    // 编译后的co_await 模拟展开
-    // auto&& __expr = SimpleAwaiter{&counter};  // 原始表达式
-    // auto __awaiter =
-    //     get_awaiter(__expr);  // 提取 awaiter（可能是 operator co_await
-    //     或成员）
-    // if (!__awaiter.await_ready()) {
-    //   // 保存协程当前状态（局部变量 counter 的值，程序计数点等）到协程帧
-    //   __awaiter.await_suspend(this_coroutine_handle);
-    //   co_suspend;  // 真正挂起协程，返回到调用方
-    // }
-    //// 协程恢复时，从这里继续
-    // int v = __awaiter.await_resume();
-
     int v = co_await SimpleAwaiter{&counter};
     if (v == 0) {
       break;
@@ -39,7 +33,7 @@ struct SimpleAwaiter {
 }
 
 void run_example() {
-  auto g = demo_co_await(3);
+  auto g = foo(3);
   g.run_to_end();
 }
 
