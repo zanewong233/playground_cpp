@@ -12,7 +12,6 @@ target_include_directories(playground_headers
 # --- 明确列出 playground_utils 库的所有源文件 ---
 # 路径是相对于当前 CMakeLists.txt 文件（即 src/ 目录）的
 set(UTILS_SOURCES
-	cpp17/cpp17_test.cpp
 	threading/async_log.cpp
 	threading/thread_pool.cpp
 	print_class/print_class.cpp

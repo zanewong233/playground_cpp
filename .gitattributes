@@ -1,0 +1,16 @@
+# 所有文本文件统一转 LF 存储，checkout 时根据平台转换
+* text=auto
+
+# 源代码统一 LF
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.h   text eol=lf
+*.c   text eol=lf
+
+# 脚本类也强制 LF
+*.sh  text eol=lf
+*.py  text eol=lf
+
+# Windows 脚本可以单独强制 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
